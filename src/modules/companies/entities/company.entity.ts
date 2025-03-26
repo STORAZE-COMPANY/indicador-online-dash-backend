@@ -3,4 +3,5 @@ export class Company {
   name: string;
   cnpj: string;
   isActive: boolean;
+  checklistIds: number[];
 }

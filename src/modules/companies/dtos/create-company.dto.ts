@@ -1,4 +1,4 @@
-import { IsString, IsBoolean } from "class-validator";
+import { IsString, IsBoolean, IsArray, IsNumber } from "class-validator";
 
 export class CreateCompanyDto {
   @IsString()
@@ -9,4 +9,8 @@ export class CreateCompanyDto {
 
   @IsBoolean()
   isActive: boolean;
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  checklistIds: number[];
 }

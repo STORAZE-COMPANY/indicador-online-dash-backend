@@ -21,8 +21,12 @@ export class CompaniesService {
   create(dto: CreateCompanyDto): Company {
     const company: Company = {
       id: this.id++,
-      ...dto,
+      name: dto.name,
+      cnpj: dto.cnpj,
+      isActive: dto.isActive,
+      checklistIds: dto.checklistIds || [],
     };
+
     this.companies.push(company);
     return company;
   }
