@@ -2,45 +2,51 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { Company } from "./entities/company.entity";
 import { CreateCompanyDto } from "./dtos/create-company.dto";
 import { UpdateCompanyDto } from "./dtos/update-company.dto";
+import db from "database/connection";
 
 @Injectable()
 export class CompaniesService {
-  private companies: Company[] = [];
-  private id = 1;
-
-  findAll(): Company[] {
-    return this.companies;
+  async findAll(): Promise<Company[]> {
+    return db<Company>("companies").select("*");
   }
 
-  findOne(id: number): Company {
-    const company = this.companies.find((c) => c.id === id);
+  async findOne(id: number): Promise<Company> {
+    const company = await db<Company>("companies").where({ id }).first();
     if (!company) throw new NotFoundException("Empresa não encontrada");
     return company;
   }
 
-  create(dto: CreateCompanyDto): Company {
-    const company: Company = {
-      id: this.id++,
-      name: dto.name,
-      cnpj: dto.cnpj,
-      isActive: dto.isActive,
-      checklistIds: dto.checklistIds || [],
-    };
+  async create(dto: CreateCompanyDto): Promise<Company> {
+    const [created] = await db<Company>("companies")
+      .insert({
+        name: dto.name,
+        cnpj: dto.cnpj,
+        isActive: dto.isActive,
+        checklistIds: db.raw("?::jsonb", [JSON.stringify(dto.checklistIds)]),
+      })
+      .returning("*");
 
-    this.companies.push(company);
-    return company;
+    return created;
   }
 
-  update(id: number, dto: UpdateCompanyDto): Company {
-    const company = this.findOne(id);
-    const index = this.companies.findIndex((c) => c.id === id);
-    const updated = { ...company, ...dto };
-    this.companies[index] = updated;
+  async update(id: number, dto: UpdateCompanyDto): Promise<Company> {
+    const [updated] = await db<Company>("companies")
+      .where({ id })
+      .update({
+        name: dto.name,
+        cnpj: dto.cnpj,
+        isActive: dto.isActive,
+        checklistIds: db.raw("?::jsonb", [JSON.stringify(dto.checklistIds)]),
+        updated_at: db.fn.now(),
+      })
+      .returning("*");
+
+    if (!updated) throw new NotFoundException("Empresa não encontrada");
     return updated;
   }
 
-  remove(id: number): void {
-    this.findOne(id); // valida existência
-    this.companies = this.companies.filter((c) => c.id !== id);
+  async remove(id: number): Promise<void> {
+    const deleted = await db("companies").where({ id }).del();
+    if (!deleted) throw new NotFoundException("Empresa não encontrada");
   }
 }

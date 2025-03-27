@@ -4,4 +4,6 @@ export class Company {
   cnpj: string;
   isActive: boolean;
   checklistIds: number[];
+  created_at?: Date;
+  updated_at?: Date;
 }

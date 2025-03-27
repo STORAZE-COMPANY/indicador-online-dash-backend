@@ -1,47 +1,66 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Checklist } from "./entities/checklist.entity";
 import { CreateChecklistDto } from "./dtos/create-checklist.dto";
 import { UpdateChecklistDto } from "./dtos/update-checklist.dto";
+import db from "database/connection";
 
 @Injectable()
 export class ChecklistsService {
-  private checklists: Checklist[] = [];
-  private id = 1;
+  async create(dto: CreateChecklistDto): Promise<Checklist> {
+    const categoriesJson = JSON.stringify(dto.categories);
 
-  create(dto: CreateChecklistDto): Checklist {
-    const checklist: Checklist = {
-      id: this.id++,
-      name: dto.name,
-      categories: dto.categories,
-    };
+    const [created] = await db<Checklist>("checklists")
+      .insert({
+        name: dto.name,
+        categories: db.raw("?::jsonb", [categoriesJson]),
+      })
+      .returning("*");
 
-    this.checklists.push(checklist);
+    return created;
+  }
+
+  async findAll(): Promise<Checklist[]> {
+    const data = await db<Checklist>("checklists").select("*");
+
+    return data.map((item) => ({
+      ...item,
+      categories: item.categories,
+    }));
+  }
+
+  async findOne(id: number): Promise<Checklist> {
+    const checklist = await db<Checklist>("checklists").where({ id }).first();
+
+    if (!checklist) {
+      throw new NotFoundException("Checklist não encontrado");
+    }
+
     return checklist;
   }
 
-  findAll(): Checklist[] {
-    return this.checklists;
-  }
+  async update(id: number, dto: UpdateChecklistDto): Promise<Checklist> {
+    const [updated] = await db<Checklist>("checklists")
+      .where({ id })
+      .update({
+        name: dto.name,
+        categories: dto.categories,
+        updated_at: db.fn.now(),
+      })
+      .returning("*");
 
-  findOne(id: number): Checklist {
-    const checklist = this.checklists.find((c) => c.id === id);
-    if (!checklist) throw new NotFoundException("Checklist não encontrado");
-    return checklist;
-  }
+    if (!updated) {
+      throw new NotFoundException("Checklist não encontrado");
+    }
 
-  update(id: number, dto: UpdateChecklistDto): Checklist {
-    const index = this.checklists.findIndex((c) => c.id === id);
-    if (index === -1) throw new NotFoundException("Checklist não encontrado");
-
-    const updated = { ...this.checklists[index], ...dto };
-    this.checklists[index] = updated;
     return updated;
   }
 
-  remove(id: number): void {
-    const exists = this.checklists.some((c) => c.id === id);
-    if (!exists) throw new NotFoundException("Checklist não encontrado");
+  async remove(id: number): Promise<void> {
+    const deleted = await db("checklists").where({ id }).del();
 
-    this.checklists = this.checklists.filter((c) => c.id !== id);
+    if (!deleted) {
+      throw new NotFoundException("Checklist não encontrado");
+    }
   }
 }

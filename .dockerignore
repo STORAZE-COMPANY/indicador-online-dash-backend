@@ -1,0 +1,12 @@
+node_modules
+dist
+test
+.git
+.gitignore
+Dockerfile
+README.md
+.eslintrc.js
+.eslint*
+*.log
+*.md
+.env

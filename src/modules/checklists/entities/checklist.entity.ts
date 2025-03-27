@@ -17,4 +17,6 @@ export class Checklist {
   id: number;
   name: string;
   categories: Category[];
+  created_at?: Date;
+  updated_at?: Date;
 }
