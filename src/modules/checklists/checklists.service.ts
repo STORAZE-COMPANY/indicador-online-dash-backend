@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Checklist } from "./entities/checklist.entity";
 import { CreateChecklistDto } from "./dtos/create-checklist.dto";
 import { UpdateChecklistDto } from "./dtos/update-checklist.dto";
 import db from "database/connection";
+import { CheckListResponseMessages } from "./enums/question-type.enum";
 
 @Injectable()
 export class ChecklistsService {
@@ -33,13 +33,14 @@ export class ChecklistsService {
     const checklist = await db<Checklist>("checklists").where({ id }).first();
 
     if (!checklist) {
-      throw new NotFoundException("Checklist não encontrado");
+      throw new NotFoundException(CheckListResponseMessages.notFound);
     }
 
     return checklist;
   }
 
   async update(id: number, dto: UpdateChecklistDto): Promise<Checklist> {
+    await this.findOne(id);
     const [updated] = await db<Checklist>("checklists")
       .where({ id })
       .update({
@@ -49,18 +50,11 @@ export class ChecklistsService {
       })
       .returning("*");
 
-    if (!updated) {
-      throw new NotFoundException("Checklist não encontrado");
-    }
-
     return updated;
   }
 
   async remove(id: number): Promise<void> {
-    const deleted = await db("checklists").where({ id }).del();
-
-    if (!deleted) {
-      throw new NotFoundException("Checklist não encontrado");
-    }
+    await this.findOne(id);
+    await db("checklists").where({ id }).del();
   }
 }
