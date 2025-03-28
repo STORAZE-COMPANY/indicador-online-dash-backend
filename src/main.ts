@@ -1,6 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "@app/app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { ApiSwaggerDescription } from "@shared/enums";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,15 +12,20 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-    .setTitle("Minha API")
-    .setDescription("Documentação da API usando Swagger")
-    .setVersion("1.0")
+    .setTitle(ApiSwaggerDescription.title)
+    .setDescription(ApiSwaggerDescription.description)
+    .setVersion(ApiSwaggerDescription.version)
     .addBearerAuth() // Adiciona suporte a autenticação JWT (opcional)
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api", app, document); // O Swagger ficará disponível em /api
-
+  // Expondo o JSON do Swagger na rota /api-json
+  app
+    .getHttpAdapter()
+    .get("/api-json", (req: any, res: { json: (body: any) => void }) => {
+      res.json(document);
+    });
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
