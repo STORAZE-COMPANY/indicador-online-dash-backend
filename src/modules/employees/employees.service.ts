@@ -10,6 +10,8 @@ import { CreateEmployeeDto } from "./dtos/create-employee.dto";
 import db from "database/connection";
 import { EmployeesResponseMessages } from "./enums";
 import { BaseMessages } from "@shared/enums";
+import { BasePaginationParams } from "./interfaces";
+import { Knex } from "knex";
 // import { sendEmail } from "./smtp";
 
 @Injectable()
@@ -22,6 +24,19 @@ export class EmployeesService {
     if (!employee)
       throw new NotFoundException(EmployeesResponseMessages.notFound);
     return employee;
+  }
+
+  async findList({
+    query,
+    limit,
+    page,
+  }: BasePaginationParams): Promise<Employee[]> {
+    const offset = (page - 1) * limit;
+    return await db<Employee>("employees")
+      .where(this.generateWhereBuilder(query))
+      .limit(limit)
+      .offset(offset)
+      .orderBy("name");
   }
 
   async create({
@@ -65,5 +80,13 @@ export class EmployeesService {
 
   generateRandomCode = () => {
     return Math.random().toString().slice(2, 10); // Gera um número aleatório e pega os 8 primeiros dígitos
+  };
+  generateWhereBuilder = (query?: string) => {
+    return (builder: Knex.QueryBuilder<Employee>) => {
+      if (query) {
+        builder.where("name", "ilike", `%${query}%`);
+        builder.orWhere("email", "ilike", `%${query}%`);
+      }
+    };
   };
 }

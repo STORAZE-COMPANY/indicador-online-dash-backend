@@ -1,9 +1,21 @@
-import { Body, ConflictException, Controller, Post } from "@nestjs/common";
+import {
+  Body,
+  ConflictException,
+  Controller,
+  Get,
+  Post,
+  Query,
+} from "@nestjs/common";
 import { EmployeesService } from "./employees.service";
 import { CreateEmployeeDto } from "./dtos/create-employee.dto";
-import { ApiConflictResponse, ApiCreatedResponse } from "@nestjs/swagger";
+import {
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
+} from "@nestjs/swagger";
 import { BaseMessages } from "@shared/enums";
-import { CreateEmployeeResponse } from "./entities/employee.entity";
+import { CreateEmployeeResponse, Employee } from "./entities/employee.entity";
+import { FindParamsDto } from "./dtos/find-params.dto";
 
 @Controller("employees")
 export class EmployeesController {
@@ -19,5 +31,17 @@ export class EmployeesController {
   })
   create(@Body() dto: CreateEmployeeDto) {
     return this.service.create(dto);
+  }
+
+  @Get()
+  @ApiOkResponse({
+    type: Employee,
+  })
+  findList(@Query() { query, limit, page }: FindParamsDto) {
+    return this.service.findList({
+      query,
+      limit: Number(limit),
+      page: Number(page),
+    });
   }
 }
