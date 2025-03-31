@@ -1,56 +1,69 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 
 import * as bcrypt from "bcryptjs";
-import { Employee } from "./entities/employee.entity";
+import { CreateEmployeeResponse, Employee } from "./entities/employee.entity";
 import { CreateEmployeeDto } from "./dtos/create-employee.dto";
-import { UpdateEmployeeDto } from "./dtos/update-employee.dto";
+import db from "database/connection";
+import { EmployeesResponseMessages } from "./enums";
+import { BaseMessages } from "@shared/enums";
+// import { sendEmail } from "./smtp";
 
 @Injectable()
 export class EmployeesService {
-  private employees: Employee[] = [];
-  private id = 1;
+  async findByWhereOne(where: Partial<Employee>): Promise<Employee> {
+    const employee = await db<Employee>("employees")
+      .where({ ...where })
+      .first();
 
-  findAll(): Employee[] {
-    return this.employees;
-  }
-
-  findOne(id: number): Employee {
-    const employee = this.employees.find((e) => e.id === id);
-    if (!employee) throw new NotFoundException("Funcionário não encontrado");
+    if (!employee)
+      throw new NotFoundException(EmployeesResponseMessages.notFound);
     return employee;
   }
 
-  create(dto: CreateEmployeeDto): Employee {
-    const hashedPassword = bcrypt.hashSync(dto.password, 10);
+  async create({
+    company_id,
+    email,
+    name,
+    phone,
+  }: CreateEmployeeDto): Promise<CreateEmployeeResponse> {
+    const emailAlreadyExists = await db<Employee>("employees")
+      .where({ email })
+      .first();
+    if (emailAlreadyExists)
+      throw new ConflictException(BaseMessages.emailAlreadyExists);
+    const harshPassword = await bcrypt.hash(
+      this.generateRandomCode().toString(),
+      8,
+    );
+    const [created] = await db<Employee>("employees")
+      .insert({
+        company_id,
+        email,
+        name,
+        phone,
+        password: harshPassword,
+      })
+      .returning(["id", "company_id", "email", "name", "phone"]);
 
-    const employee: Employee = {
-      id: this.id++,
-      name: dto.name,
-      email: dto.email,
-      password: hashedPassword,
-      companyId: dto.companyId,
-    };
-
-    this.employees.push(employee);
-    return employee;
+    {
+      /*  TODO: Implementar envio de email SMTP
+    if (created) {
+       await sendEmail({
+         to: email,
+         subject: EmployeesResponseMessages.welcome,
+         text: EmployeesResponseMessages.yourPassword + harshPassword,
+       });
+     }
+    */
+    }
+    return created;
   }
 
-  update(id: number, dto: UpdateEmployeeDto): Employee {
-    const employee = this.findOne(id);
-    const index = this.employees.findIndex((e) => e.id === id);
-    const updated = {
-      ...employee,
-      ...dto,
-      password: dto.password
-        ? bcrypt.hashSync(dto.password, 10)
-        : employee.password,
-    };
-    this.employees[index] = updated;
-    return updated;
-  }
-
-  remove(id: number): void {
-    this.findOne(id); // valida existência
-    this.employees = this.employees.filter((e) => e.id !== id);
-  }
+  generateRandomCode = () => {
+    return Math.random().toString().slice(2, 10); // Gera um número aleatório e pega os 8 primeiros dígitos
+  };
 }
