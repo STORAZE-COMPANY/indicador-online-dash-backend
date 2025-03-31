@@ -9,9 +9,28 @@ export class Employee {
   @ApiProperty({ description: "Email do funcionário" })
   email: string;
 
-  @ApiProperty({ description: "Senha do funcionário (mínimo de 4 caracteres)" })
-  password: string;
+  @ApiProperty({ description: "Telefone do funcionário" })
+  phone: string;
 
   @ApiProperty({ description: "ID da empresa do funcionário" })
-  companyId: number;
+  company_id: number;
+
+  @ApiProperty({ description: "Senha do funcionário" })
+  password: string;
+}
+
+export class CreateEmployeeResponse {
+  @ApiProperty({ description: "Id do funcionário" })
+  id: number;
+  @ApiProperty({ description: "Nome do funcionário" })
+  name: string;
+
+  @ApiProperty({ description: "Email do funcionário" })
+  email: string;
+
+  @ApiProperty({ description: "ID da empresa do funcionário" })
+  company_id: number;
+
+  @ApiProperty({ description: "Telefone do funcionário" })
+  phone: string;
 }
