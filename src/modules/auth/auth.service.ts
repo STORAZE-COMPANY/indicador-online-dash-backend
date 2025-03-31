@@ -8,20 +8,17 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
 import db from "database/connection";
 import { AuthResponseMessages } from "./enums";
+import { AuthResponse, TokenProps, userPayload } from "./interface";
 
 @Injectable()
 export class AuthService {
   constructor(private jwtService: JwtService) {}
 
-  async validateUser(
-    email: string,
-    password: string,
-  ): Promise<{
-    id: string;
-    email: string;
-    role: string;
-  }> {
-    const user = await db<User>("users").where({ email }).first();
+  async validateUser(email: string, password: string): Promise<AuthResponse> {
+    const user = await db<User>("users")
+      .where({ email })
+      .first()
+      .select("id", "name", "email", "password", "role");
 
     if (!user) throw new NotFoundException(AuthResponseMessages.userNotFound);
 
@@ -29,17 +26,44 @@ export class AuthService {
     if (!passwordMatch)
       throw new ForbiddenException(AuthResponseMessages.passwordIncorrect);
 
-    return {
-      id: user.id,
+    const access_token = this.generateJwtToken({
       email: user.email,
+      id: user.id,
       role: user.role ?? "user",
+      expiresIn: "1d",
+    });
+
+    const refresh_token = this.generateJwtToken({
+      email: user.email,
+      id: user.id,
+      expiresIn: "7d",
+      role: user.role ?? "user",
+    });
+
+    return {
+      access_token,
+      refresh_token,
+      user: this.buildUserAuth(user),
     };
   }
 
-  login(user: { id: string; email: string; role: string }) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
+  generateJwtToken(tokenInfos: TokenProps) {
+    const payload = {
+      sub: tokenInfos.id,
+      email: tokenInfos.email,
+      role: tokenInfos.role,
+    };
+    return this.jwtService.sign(payload, {
+      expiresIn: "1d",
+    });
+  }
+
+  buildUserAuth(user: User): userPayload & { name: string } {
     return {
-      access_token: this.jwtService.sign(payload),
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
     };
   }
 }
