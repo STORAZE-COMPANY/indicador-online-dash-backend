@@ -16,7 +16,16 @@ async function bootstrap() {
     .setTitle(ApiSwaggerDescription.title)
     .setDescription(ApiSwaggerDescription.description)
     .setVersion(ApiSwaggerDescription.version)
-    .addBearerAuth() // Adiciona suporte a autenticação JWT (opcional)
+    .addBearerAuth(
+      {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        in: "header",
+      },
+      "bearer",
+    )
+    .addSecurityRequirements("bearer")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
