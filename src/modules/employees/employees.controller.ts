@@ -5,6 +5,7 @@ import {
   Get,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { EmployeesService } from "./employees.service";
 import { CreateEmployeeDto } from "./dtos/create-employee.dto";
@@ -16,6 +17,7 @@ import {
 import { BaseMessages } from "@shared/enums";
 import { CreateEmployeeResponse, Employee } from "./entities/employee.entity";
 import { FindParamsDto } from "./dtos/find-params.dto";
+import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 
 @Controller("employees")
 export class EmployeesController {
@@ -37,6 +39,7 @@ export class EmployeesController {
   @ApiOkResponse({
     type: Employee,
   })
+  @UseGuards(JwtAuthGuard)
   findList(@Query() { query, limit, page }: FindParamsDto) {
     return this.service.findList({
       query,
