@@ -1,19 +1,30 @@
 import {
   Body,
   Controller,
+  Get,
   NotFoundException,
   Post,
   UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
-import { LoginDto, ResponseAuthDto } from "./dtos/login.dto";
+import {
+  LoginDto,
+  ResponseAuthDto,
+  TokenDto,
+  UserAuth,
+} from "./dtos/login.dto";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
 import { AuthResponseMessages } from "./enums";
+import { Req } from "@nestjs/common";
+import { CustomRequest } from "./auth.strategy";
+import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 
 /**
  * Controlador responsável pelas operações de autenticação.
@@ -67,5 +78,30 @@ export class AuthController {
       loginDto.email,
       loginDto.password,
     );
+  }
+  @Post("refreshToken")
+  @ApiCreatedResponse({
+    type: ResponseAuthDto,
+    description: "Token de autenticação atualizado",
+  })
+  refreshToken(@Body() { refreshToken }: TokenDto) {
+    return this.authService.refreshTokens(refreshToken);
+  }
+
+  @Get("userAuth")
+  @ApiOkResponse({
+    type: UserAuth,
+    description: "Informações do usuário autenticado",
+  })
+  @UseGuards(JwtAuthGuard)
+  getUserAuth(@Req() request: CustomRequest) {
+    try {
+      const user = request.user;
+      if (!user) throw new UnauthorizedException("Token inválido");
+      return this.authService.findAuthUser(user.id);
+    } catch (error) {
+      console.error(error);
+      throw new UnauthorizedException("Token inválido");
+    }
   }
 }

@@ -27,7 +27,7 @@ export class LoginDto {
   password: string;
 }
 
-class User {
+export class UserAuth {
   @ApiProperty({ example: "1", description: "ID do usuário" })
   @IsString()
   id: string;
@@ -67,5 +67,14 @@ export class ResponseAuthDto {
     },
     description: "Dados do usuário autenticado",
   })
-  user: User;
+  user: UserAuth;
+}
+
+export class TokenDto {
+  @ApiProperty({
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+    description: "Token de atualização",
+  })
+  @IsString()
+  refreshToken: string;
 }
