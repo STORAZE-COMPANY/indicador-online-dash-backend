@@ -1,36 +1,37 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { EmployeesFieldsProperties } from "../enums";
 
 export class Employee {
-  @ApiProperty({ description: "Id do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.id })
   id: number;
-  @ApiProperty({ description: "Nome do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.name })
   name: string;
 
-  @ApiProperty({ description: "Email do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.email })
   email: string;
 
-  @ApiProperty({ description: "Telefone do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.phone })
   phone: string;
 
-  @ApiProperty({ description: "ID da empresa do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.company_id })
   company_id: number;
 
-  @ApiProperty({ description: "Senha do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.password })
   password: string;
 }
 
 export class CreateEmployeeResponse {
-  @ApiProperty({ description: "Id do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.id })
   id: number;
-  @ApiProperty({ description: "Nome do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.name })
   name: string;
 
-  @ApiProperty({ description: "Email do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.email })
   email: string;
 
-  @ApiProperty({ description: "ID da empresa do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.company_id })
   company_id: number;
 
-  @ApiProperty({ description: "Telefone do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.phone })
   phone: string;
 }
