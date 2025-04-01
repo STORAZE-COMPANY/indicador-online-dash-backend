@@ -11,4 +11,7 @@ export enum BaseMessages {
   emailAlreadyExists = "E-mail já cadastrado",
 
   notEmpty = "O campo não pode ser vazio",
+  unAuthorizedUser = "Usuário não autenticado",
+
+  invalidToken = "Token inválido",
 }

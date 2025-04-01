@@ -4,25 +4,32 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
+import { BaseMessages } from "@shared/enums";
 
 /**
- * Guarda de autenticação JWT que estende a funcionalidade do AuthGuard padrão do NestJS.
- *
  * @class JwtAuthGuard
- * @extends {AuthGuard("jwt")}
+ * @extends AuthGuard
+ *
+ * @description
+ * Guarda personalizada que estende a funcionalidade do `AuthGuard` padrão do NestJS
+ * para autenticação JWT. Esta guarda verifica se o usuário está autenticado
+ * e lança uma exceção personalizada caso a autenticação falhe.
  *
  * @method canActivate
- * Sobrescreve o método `canActivate` para delegar a lógica de ativação ao AuthGuard base.
+ * Sobrescreve o método `canActivate` para delegar a lógica de ativação ao `AuthGuard` base.
  *
  * @method handleRequest
- * Manipula a validação do usuário autenticado. Lança uma exceção do tipo `UnauthorizedException`
- * caso ocorra um erro ou o usuário não esteja autenticado.
+ * Manipula a lógica de validação do usuário autenticado. Caso ocorra um erro ou o usuário
+ * não seja válido, lança uma exceção de autorização não permitida com uma mensagem personalizada.
  *
- * @param {any} err - Erro ocorrido durante a autenticação, se houver.
- * @param {any} user - Objeto do usuário autenticado, se disponível.
- * @returns {any} O objeto do usuário autenticado, caso a autenticação seja bem-sucedida.
+ * @template UserAuth
+ * Tipo genérico que representa o usuário autenticado.
  *
- * @throws {UnauthorizedException} Caso o usuário não esteja autenticado ou ocorra um erro.
+ * @param err - Exceção de autorização não permitida, caso ocorra.
+ * @param user - Objeto do usuário autenticado.
+ *
+ * @throws {UnauthorizedException}
+ * Lança uma exceção caso o usuário não seja válido ou ocorra um erro durante a autenticação.
  */
 @Injectable()
 export class JwtAuthGuard extends AuthGuard("jwt") {
@@ -30,12 +37,14 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any) {
+  handleRequest<UserAuth>(
+    err: UnauthorizedException,
+    user: UserAuth,
+  ): UserAuth {
     if (err || !user) {
-      throw new UnauthorizedException("Usuário não autenticado. handleRequest");
+      throw new UnauthorizedException(BaseMessages.unAuthorizedUser);
     }
 
-    // O usuário agora está no request!
     return user;
   }
 }
