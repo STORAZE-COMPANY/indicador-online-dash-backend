@@ -8,6 +8,7 @@ import { CreateCompanyDto } from "./dtos/create-company.dto";
 import { UpdateCompanyDto } from "./dtos/update-company.dto";
 import db from "database/connection";
 import { CompaniesResponseMessages } from "./enums";
+import * as bcrypt from "bcryptjs";
 
 @Injectable()
 export class CompaniesService {
@@ -28,15 +29,34 @@ export class CompaniesService {
       .first();
     if (companyCnpjExist)
       throw new ConflictException(CompaniesResponseMessages.cnpjAlreadyExists);
+
+    const harshPassword = await bcrypt.hash(
+      this.generateRandomCode().toString(),
+      8,
+    );
+
     const [created] = await db<Company>("companies")
       .insert({
         name: dto.name,
         cnpj: dto.cnpj,
+        role_id: dto.roleId,
         isActive: dto.isActive,
+        password: harshPassword,
+        email: dto.email,
         checklistIds: db.raw("?::jsonb", [JSON.stringify(dto.checklistIds)]),
       })
       .returning("*");
-
+    {
+      /*  TODO: Implementar envio de email SMTP
+      if (created) {
+         await sendEmail({
+           to: email,
+           subject: EmployeesResponseMessages.welcome,
+           text: EmployeesResponseMessages.yourPassword + harshPassword,
+         });
+       }
+      */
+    }
     return created;
   }
 
@@ -60,4 +80,7 @@ export class CompaniesService {
     await this.findOne(id);
     await db("companies").where({ id }).del();
   }
+  generateRandomCode = () => {
+    return Math.random().toString().slice(2, 10);
+  };
 }

@@ -1,39 +1,62 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { CompaniesFieldsProperties } from "../enums";
 
 export class Company {
-  @ApiProperty({ example: 1, description: "ID único da empresa" })
+  @ApiProperty({ example: 1, description: CompaniesFieldsProperties.id })
   id: number;
 
-  @ApiProperty({ example: "Empresa XYZ", description: "Nome da empresa" })
+  @ApiProperty({
+    example: "Empresa XYZ",
+    description: CompaniesFieldsProperties.name,
+  })
   name: string;
 
   @ApiProperty({
+    example: "emprese@empresa.com",
+    description: CompaniesFieldsProperties.email,
+  })
+  email: string;
+
+  @ApiProperty({
     example: "12.345.678/0001-99",
-    description: "CNPJ da empresa",
+    description: CompaniesFieldsProperties.cnpj,
   })
   cnpj: string;
 
-  @ApiProperty({ example: true, description: "Se a empresa está ativa ou não" })
+  @ApiProperty({
+    example: true,
+    description: CompaniesFieldsProperties.isActive,
+  })
   isActive: boolean;
 
   @ApiProperty({
     example: [101, 102, 103],
-    description: "IDs dos checklists associados à empresa",
+    description: CompaniesFieldsProperties.checklistIds,
     type: [Number],
   })
   checklistIds: number[];
 
   @ApiProperty({
     example: "2024-03-27T12:00:00Z",
-    description: "Data de criação da empresa",
+    description: CompaniesFieldsProperties.created_at,
     required: false,
   })
   created_at?: Date;
 
   @ApiProperty({
     example: "2024-03-27T12:00:00Z",
-    description: "Última atualização da empresa",
+    description: CompaniesFieldsProperties.updated_at,
     required: false,
   })
   updated_at?: Date;
+
+  @ApiProperty({
+    description: CompaniesFieldsProperties.role,
+  })
+  role_id: string;
+
+  @ApiProperty({
+    description: CompaniesFieldsProperties.password,
+  })
+  password: string;
 }
