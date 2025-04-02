@@ -27,4 +27,15 @@ const phoneRegex = /^[0-9]{11}$/;
  */
 const notBlankRegex = /^(?!\s*$).+/;
 
-export { phoneRegex, notBlankRegex };
+/**
+ * Expressão regular que valida se uma string contém apenas números.
+ *
+ * @example
+ * ```typescript
+ * onlyNumbersRegex.test("12345"); // true
+ * onlyNumbersRegex.test("123a45"); // false
+ * ```
+ */
+const onlyNumbersRegex = /^\d+$/;
+
+export { phoneRegex, notBlankRegex, onlyNumbersRegex };

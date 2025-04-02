@@ -16,8 +16,17 @@ export enum BaseMessages {
   invalidToken = "Token inválido",
 }
 
+export enum smtpMessages {
+  emailSent = "Email enviado com sucesso",
+  emailNotSent = "Falha ao enviar email",
+  welcome = "Bem-vindo!",
+  yourPassword = "Sua senha é: ",
+}
+
 export enum BaseMessagesValidations {
   phoneRegex = "O telefone deve conter exatamente 11 dígitos numéricos (sem pontos, barras ou outros caracteres especiais).",
+
+  withoutSpecialCharacters = "O campo não pode conter caracteres especiais",
   notBlank = "O campo não pode conter apenas espaços",
 
   notEmpty = "O campo não pode ser vazio",
@@ -31,4 +40,11 @@ export enum BasePaginatedParams {
   limit = "Limite de registros por página",
   page = "Página de registros",
   query = "Query de busca",
+}
+
+export enum Role {
+  admin = "admin",
+  superAdmin = "superAdmin",
+
+  user = "user",
 }
