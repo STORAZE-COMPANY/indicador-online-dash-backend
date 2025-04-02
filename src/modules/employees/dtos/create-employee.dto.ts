@@ -37,4 +37,10 @@ export class CreateEmployeeDto {
   @IsNumber({}, { message: BaseMessagesValidations.isNumber })
   @Min(1, { message: BaseMessagesValidations.notNegative })
   company_id: number;
+
+  @ApiProperty({ description: EmployeesFieldsProperties.roleId })
+  @IsString()
+  @Matches(notBlankRegex, { message: BaseMessagesValidations.notBlank })
+  @IsNotEmpty({ message: BaseMessagesValidations.notEmpty })
+  roleId: string;
 }

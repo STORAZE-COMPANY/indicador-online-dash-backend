@@ -15,4 +15,5 @@ export enum EmployeesFieldsProperties {
   phone = "Telefone do funcionário",
   company_id = "ID da empresa do funcionário",
   password = "Senha do funcionário",
+  roleId = "Id do nível do funcionário",
 }

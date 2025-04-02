@@ -18,6 +18,9 @@ export class Employee {
 
   @ApiProperty({ description: EmployeesFieldsProperties.password })
   password: string;
+
+  @ApiProperty({ description: EmployeesFieldsProperties.roleId })
+  role_id: string;
 }
 
 export class CreateEmployeeResponse {

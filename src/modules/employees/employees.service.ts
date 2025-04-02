@@ -44,6 +44,7 @@ export class EmployeesService {
     email,
     name,
     phone,
+    roleId,
   }: CreateEmployeeDto): Promise<CreateEmployeeResponse> {
     const emailAlreadyExists = await db<Employee>("employees")
       .where({ email })
@@ -60,17 +61,18 @@ export class EmployeesService {
         email,
         name,
         phone,
+        role_id: roleId,
         password: harshPassword,
       })
-      .returning(["id", "company_id", "email", "name", "phone"]);
+      .returning(["id", "company_id", "email", "name", "phone", "role_id"]);
 
     {
       /*  TODO: Implementar envio de email SMTP
     if (created) {
        await sendEmail({
          to: email,
-         subject: EmployeesResponseMessages.welcome,
-         text: EmployeesResponseMessages.yourPassword + harshPassword,
+         subject: smtpMessages.welcome,
+         text: smtpMessages.yourPassword + harshPassword,
        });
      }
     */
