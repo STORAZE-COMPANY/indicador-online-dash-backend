@@ -12,6 +12,7 @@ import {
   AuthResponse,
   TokenProps,
   UserAuth,
+  EntityToAuth,
 } from "./interface";
 import { Knex } from "knex";
 import { Employee } from "@modules/employees/entities/employee.entity";
@@ -34,8 +35,6 @@ export class AuthService {
    */
   async validateUser(email: string, password: string): Promise<AuthResponse> {
     const user = await this.findAuthByEmailAndRole(email);
-
-    if (!user) throw new NotFoundException(AuthResponseMessages.userNotFound);
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch)
@@ -102,6 +101,38 @@ export class AuthService {
   }
 
   /**
+   * Busca um usuário autenticado pelo email e retorna suas informações, incluindo a senha.
+   *
+   * @param email - O email do usuário a ser buscado.
+   * @returns Uma Promise que resolve para um objeto contendo as informações do usuário
+   *          autenticado, incluindo a senha.
+   * @throws NotFoundException - Lançada caso nenhum usuário seja encontrado com o email fornecido.
+   */
+  async findAuthByEmailAndRole(
+    email: string,
+  ): Promise<UserAuth & { password: string }> {
+    let userAuth: (UserAuth & { password: string }) | null = null;
+
+    userAuth = await db<Employee>("employees")
+      .join("roles", "employees.role_id", "roles.id")
+      .where(this.generateWhereBuilder({ email, entityName: "employees" }))
+      .first()
+      .select(this.generateSelect("employees"));
+
+    if (!userAuth) {
+      userAuth = await db<Company>("companies")
+        .join("roles", "companies.role_id", "roles.id")
+        .where(this.generateWhereBuilder({ email, entityName: "companies" }))
+        .first()
+        .select(this.generateSelect("companies"));
+    }
+
+    if (!userAuth)
+      throw new NotFoundException(AuthResponseMessages.userNotFound);
+
+    return userAuth;
+  }
+  /**
    * Gera um token JWT para autenticação do usuário.
    *
    * @param {TokenProps} param0 - Objeto contendo as informações necessárias para gerar o token.
@@ -150,50 +181,31 @@ export class AuthService {
     entityName,
   }: {
     email: string;
-    entityName: "companies" | "employees";
+    entityName: EntityToAuth;
   }) {
     return (builder: Knex.QueryBuilder<SelectByWhereAuth>) => {
       builder
         .join("roles", `${entityName}.role_id`, "roles.id")
-        .where("email", email)
+        .where(`${entityName}.email`, email)
         .andWhereNot("roles.name", Role.user);
     };
   }
 
   /**
-   * Busca um usuário autenticado pelo email e retorna suas informações, incluindo a senha.
+   * Gera uma lista de campos selecionados para uma entidade específica.
    *
-   * @param email - O email do usuário a ser buscado.
-   * @returns Uma Promise que resolve para um objeto contendo as informações do usuário
-   *          autenticado, incluindo a senha.
-   * @throws NotFoundException - Lançada caso nenhum usuário seja encontrado com o email fornecido.
+   * @param entityName - O nome da entidade para a qual os campos serão gerados.
+   * @returns Um array contendo os campos selecionados no formato `${entityName}.campo`.
    */
-  async findAuthByEmailAndRole(
-    email: string,
-  ): Promise<UserAuth & { password: string }> {
-    let userAuth: (UserAuth & { password: string }) | null = null;
-    const select = {
-      id: "id",
-      name: "name",
-      email: "email",
-      role: "role",
-      password: "password",
+  generateSelect(entityName: EntityToAuth) {
+    const fields = {
+      id: `${entityName}.id`,
+      name: `${entityName}.name`,
+      email: `${entityName}.email`,
+      role_id: `${entityName}.role_id`,
+      password: `${entityName}.password`,
+      role_name: "roles.name as role",
     };
-
-    userAuth = await db<Employee>("employees")
-      .where(this.generateWhereBuilder({ email, entityName: "employees" }))
-      .first()
-      .select(Object.values(select), "roles.name as role");
-
-    userAuth = await db<Company>("employees")
-      .join("roles", "companies.role_id", "roles.id")
-      .where(this.generateWhereBuilder({ email, entityName: "companies" }))
-      .first()
-      .select(Object.values(select), "roles.name as role");
-
-    if (!userAuth)
-      throw new NotFoundException(AuthResponseMessages.userNotFound);
-
-    return userAuth;
+    return Object.values(fields);
   }
 }

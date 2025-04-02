@@ -1,5 +1,6 @@
 import { Role } from "@shared/enums";
 
+export type EntityToAuth = "employees" | "companies";
 export interface SelectByWhereAuth {
   email: string;
   role: string;
@@ -14,7 +15,7 @@ export interface JWTInfo {
 export interface userPayload {
   id: string;
   email: string;
-  role?: Role;
+  role: Role;
 }
 
 export interface AuthResponse {

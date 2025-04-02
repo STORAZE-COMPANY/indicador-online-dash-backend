@@ -26,6 +26,6 @@ export enum AuthFieldsProperties {
 }
 
 export enum TokenProperties {
-  accessTokenExpiriesIn = "1",
-  refreshTokenExpiriesIn = "7",
+  accessTokenExpiriesIn = "1d",
+  refreshTokenExpiriesIn = "7d",
 }
