@@ -14,7 +14,6 @@ export enum AuthResponseMessages {
 
 export enum AuthRoutes {
   baseUrl = "auth",
-
   refreshTokenUrl = "refreshToken",
   loginUrl = "login",
   userAuthUrl = "userAuth",
@@ -24,4 +23,9 @@ export enum AuthFieldsProperties {
   email = "Email do usuário",
   password = "Senha do usuário",
   userId = "ID do usuário",
+}
+
+export enum TokenProperties {
+  accessTokenExpiriesIn = "1",
+  refreshTokenExpiriesIn = "7",
 }

@@ -99,7 +99,7 @@ export class AuthController {
     try {
       const user = request.user;
       if (!user) throw new UnauthorizedException(BaseMessages.invalidToken);
-      return this.authService.findAuthUser(user.id);
+      return this.authService.findAuthUser(user.email);
     } catch (error) {
       console.error(error);
       throw new UnauthorizedException(BaseMessages.invalidToken);
