@@ -21,10 +21,11 @@ import {
   ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { AuthResponseMessages } from "./enums";
+import { AuthResponseMessages, AuthRoutes } from "./enums";
 import { Req } from "@nestjs/common";
 import { CustomRequest } from "./auth.strategy";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
+import { BaseMessages } from "@shared/enums";
 
 /**
  * Controlador responsável pelas operações de autenticação.
@@ -55,19 +56,19 @@ import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
  * @decorator @ApiCreatedResponse - Resposta para o caso de autenticação bem-sucedida.
  * @decorator @ApiForbiddenResponse - Resposta para o caso de senha incorreta.
  */
-@Controller("auth")
+@Controller(AuthRoutes.baseUrl)
 @ApiTags("Auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post("login")
+  @Post(AuthRoutes.loginUrl)
   @ApiNotFoundResponse({
     description: AuthResponseMessages.userNotFound,
     type: NotFoundException,
   })
   @ApiCreatedResponse({
     type: ResponseAuthDto,
-    description: "Usuário autenticado response",
+    description: AuthResponseMessages.loginResponse,
   })
   @ApiForbiddenResponse({
     description: AuthResponseMessages.passwordIncorrect,
@@ -79,29 +80,29 @@ export class AuthController {
       loginDto.password,
     );
   }
-  @Post("refreshToken")
+  @Post(AuthRoutes.refreshTokenUrl)
   @ApiCreatedResponse({
     type: ResponseAuthDto,
-    description: "Token de autenticação atualizado",
+    description: AuthResponseMessages.refreshTokenResponse,
   })
   refreshToken(@Body() { refreshToken }: TokenDto) {
     return this.authService.refreshTokens(refreshToken);
   }
 
-  @Get("userAuth")
+  @Get(AuthRoutes.userAuthUrl)
   @ApiOkResponse({
     type: UserAuth,
-    description: "Informações do usuário autenticado",
+    description: AuthResponseMessages.userAuth,
   })
   @UseGuards(JwtAuthGuard)
   getUserAuth(@Req() request: CustomRequest) {
     try {
       const user = request.user;
-      if (!user) throw new UnauthorizedException("Token inválido");
+      if (!user) throw new UnauthorizedException(BaseMessages.invalidToken);
       return this.authService.findAuthUser(user.id);
     } catch (error) {
       console.error(error);
-      throw new UnauthorizedException("Token inválido");
+      throw new UnauthorizedException(BaseMessages.invalidToken);
     }
   }
 }
