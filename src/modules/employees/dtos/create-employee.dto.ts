@@ -7,29 +7,40 @@ import {
   Matches,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import {
+  notBlankRegex,
+  phoneRegex,
+} from "@shared/validations/annotationsValidations";
+import { BaseMessagesValidations } from "@shared/enums";
+import { EmployeesFieldsProperties } from "../enums";
 
 export class CreateEmployeeDto {
-  @ApiProperty({ description: "Nome do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.name })
   @IsString()
-  @IsNotEmpty({ message: "O nome não pode estar vazio" })
-  @Matches(/^(?!\s*$).+/, { message: "O Nome não pode conter apenas espaços" }) // Impede só espaços
+  @IsNotEmpty({ message: BaseMessagesValidations.notEmpty })
+  @Matches(notBlankRegex, { message: BaseMessagesValidations.notBlank })
   name: string;
 
-  @ApiProperty({ description: "Email do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.email })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ description: "Telefone do funcionário" })
+  @ApiProperty({ description: EmployeesFieldsProperties.phone })
   @IsString()
-  @Matches(/^[0-9]{11}$/, {
-    message:
-      "O telefone deve conter exatamente 11 dígitos numéricos (sem pontos, barras ou outros caracteres especiais).",
+  @Matches(phoneRegex, {
+    message: BaseMessagesValidations.phoneRegex,
   })
-  @Matches(/^(?!\s*$).+/, { message: "O Nome não pode conter apenas espaços" }) // Impede só espaços
+  @Matches(notBlankRegex, { message: BaseMessagesValidations.notBlank })
   phone: string;
 
-  @ApiProperty({ description: "ID da empresa do funcionário" })
-  @IsNumber({}, { message: "O ID da empresa deve ser um número" })
-  @Min(1, { message: "O ID da empresa deve ser um número positivo" })
+  @ApiProperty({ description: EmployeesFieldsProperties.company_id })
+  @IsNumber({}, { message: BaseMessagesValidations.isNumber })
+  @Min(1, { message: BaseMessagesValidations.notNegative })
   company_id: number;
+
+  @ApiProperty({ description: EmployeesFieldsProperties.roleId })
+  @IsString()
+  @Matches(notBlankRegex, { message: BaseMessagesValidations.notBlank })
+  @IsNotEmpty({ message: BaseMessagesValidations.notEmpty })
+  roleId: string;
 }

@@ -7,6 +7,7 @@ import { CompaniesModule } from "@companies/companies.module";
 import { AppController } from "./app.controller";
 import { EmployeesModule } from "@modules/employees/employees.module";
 import { ChecklistsModule } from "@modules/checklists/checklists.module";
+import { RolesModule } from "@modules/roles/roles.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ChecklistsModule } from "@modules/checklists/checklists.module";
     CompaniesModule,
     EmployeesModule,
     ChecklistsModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

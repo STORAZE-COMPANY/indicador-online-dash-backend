@@ -1,19 +1,31 @@
 import {
   Body,
   Controller,
+  Get,
   NotFoundException,
   Post,
   UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
-import { LoginDto, ResponseAuthDto } from "./dtos/login.dto";
+import {
+  LoginDto,
+  ResponseAuthDto,
+  TokenDto,
+  UserAuth,
+} from "./dtos/login.dto";
 import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { AuthResponseMessages } from "./enums";
+import { AuthResponseMessages, AuthRoutes } from "./enums";
+import { Req } from "@nestjs/common";
+import { CustomRequest } from "./auth.strategy";
+import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
+import { BaseMessages } from "@shared/enums";
 
 /**
  * Controlador responsável pelas operações de autenticação.
@@ -44,29 +56,53 @@ import { AuthResponseMessages } from "./enums";
  * @decorator @ApiCreatedResponse - Resposta para o caso de autenticação bem-sucedida.
  * @decorator @ApiForbiddenResponse - Resposta para o caso de senha incorreta.
  */
-@Controller("auth")
+@Controller(AuthRoutes.baseUrl)
 @ApiTags("Auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post("login")
+  @Post(AuthRoutes.loginUrl)
   @ApiNotFoundResponse({
     description: AuthResponseMessages.userNotFound,
     type: NotFoundException,
   })
   @ApiCreatedResponse({
     type: ResponseAuthDto,
-    description: "Usuário autenticado response",
+    description: AuthResponseMessages.loginResponse,
   })
   @ApiForbiddenResponse({
     description: AuthResponseMessages.passwordIncorrect,
     type: UnauthorizedException,
   })
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.validateUser(
+    return await this.authService.validateUser(
       loginDto.email,
       loginDto.password,
     );
-    return this.authService.login(user);
+  }
+  @Post(AuthRoutes.refreshTokenUrl)
+  @ApiCreatedResponse({
+    type: ResponseAuthDto,
+    description: AuthResponseMessages.refreshTokenResponse,
+  })
+  refreshToken(@Body() { refreshToken }: TokenDto) {
+    return this.authService.refreshTokens(refreshToken);
+  }
+
+  @Get(AuthRoutes.userAuthUrl)
+  @ApiOkResponse({
+    type: UserAuth,
+    description: AuthResponseMessages.userAuth,
+  })
+  @UseGuards(JwtAuthGuard)
+  getUserAuth(@Req() request: CustomRequest) {
+    try {
+      const user = request.user;
+      if (!user) throw new UnauthorizedException(BaseMessages.invalidToken);
+      return this.authService.findAuthUser(user.email);
+    } catch (error) {
+      console.error(error);
+      throw new UnauthorizedException(BaseMessages.invalidToken);
+    }
   }
 }

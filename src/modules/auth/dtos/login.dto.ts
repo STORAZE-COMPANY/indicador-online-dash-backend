@@ -1,5 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsString, MinLength } from "class-validator";
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MinLength,
+} from "class-validator";
 
 export class LoginDto {
   @ApiProperty({
@@ -16,7 +22,27 @@ export class LoginDto {
   })
   @IsString()
   @MinLength(4)
+  @IsNotEmpty({ message: "A senha não pode estar vazio" })
+  @Matches(/^(?!\s*$).+/, { message: "A senha não pode conter apenas espaços" })
   password: string;
+}
+
+export class UserAuth {
+  @ApiProperty({ example: "1", description: "ID do usuário" })
+  @IsString()
+  id: string;
+
+  @ApiProperty({ example: "Usuário", description: "Nome do usuário" })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ description: "Email do funcionário" })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ example: "user", description: "Função do usuário" })
+  @IsString()
+  role: string;
 }
 
 export class ResponseAuthDto {
@@ -24,5 +50,31 @@ export class ResponseAuthDto {
     example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
     description: "Token de acesso",
   })
-  accessToken: string;
+  access_token: string;
+
+  @ApiProperty({
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+    description: "Token de atualização",
+  })
+  refresh_token: string;
+
+  @ApiProperty({
+    example: {
+      id: "1",
+      name: "Usuário",
+      email: "usuario@example.com",
+      role: "user",
+    },
+    description: "Dados do usuário autenticado",
+  })
+  user: UserAuth;
+}
+
+export class TokenDto {
+  @ApiProperty({
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+    description: "Token de atualização",
+  })
+  @IsString()
+  refreshToken: string;
 }
