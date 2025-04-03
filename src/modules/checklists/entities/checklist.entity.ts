@@ -1,4 +1,7 @@
-import { QuestionType } from "../enums/question-type.enum";
+import {
+  CheckListFieldsProperties,
+  QuestionType,
+} from "../enums/question-type.enum";
 
 import { ApiProperty } from "@nestjs/swagger";
 import {
@@ -7,6 +10,7 @@ import {
   IsNumber,
   IsArray,
   ValidateNested,
+  IsDate,
 } from "class-validator";
 import { Type } from "class-transformer";
 
@@ -98,4 +102,53 @@ export class Checklist {
     required: false,
   })
   updated_at?: Date;
+}
+export class CheckList {
+  @ApiProperty({ description: CheckListFieldsProperties.id })
+  @IsString()
+  id: string;
+  @ApiProperty({
+    description: CheckListFieldsProperties.name,
+  })
+  @IsString()
+  name: string;
+  @ApiProperty({
+    description: CheckListFieldsProperties.categories_id,
+  })
+  @IsString()
+  categories_id: string;
+
+  @ApiProperty({
+    example: "2024-03-27T12:00:00Z",
+    description: CheckListFieldsProperties.expiries_in,
+  })
+  @IsDate()
+  expiries_in?: Date;
+
+  @ApiProperty({
+    example: "2024-03-27T12:00:00Z",
+    description: CheckListFieldsProperties.created_at,
+  })
+  @IsDate()
+  created_at?: Date;
+
+  @ApiProperty({
+    example: "2024-03-27T12:00:00Z",
+    description: CheckListFieldsProperties.updated_at,
+  })
+  @IsDate()
+  updated_at?: Date;
+}
+export class CheckListQuestions {
+  @IsString()
+  question: string;
+
+  @IsString()
+  type: string;
+
+  @IsBoolean()
+  isRequired: boolean;
+
+  @IsString()
+  checkList_id: string;
 }
