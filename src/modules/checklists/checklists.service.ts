@@ -1,23 +1,44 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Checklist } from "./entities/checklist.entity";
-import { CreateChecklistDto } from "./dtos/create-checklist.dto";
+import {
+  CheckList,
+  Checklist,
+  CheckListQuestions,
+} from "./entities/checklist.entity";
+import { CreateCheckListDto } from "./dtos/create-checklist.dto";
 import { UpdateChecklistDto } from "./dtos/update-checklist.dto";
 import db from "database/connection";
-import { CheckListResponseMessages } from "./enums/question-type.enum";
+import {
+  CheckListFieldsProperties,
+  CheckListQuestionFieldsProperties,
+  CheckListResponseMessages,
+} from "./enums/question-type.enum";
 
 @Injectable()
 export class ChecklistsService {
-  async create(dto: CreateChecklistDto): Promise<Checklist> {
-    const categoriesJson = JSON.stringify(dto.categories);
+  async create(dto: CreateCheckListDto): Promise<CheckList> {
+    return await db.transaction<CheckList>(async (trx) => {
+      const [created] = await trx<CheckList>(
+        CheckListFieldsProperties.tableName,
+      )
+        .insert({
+          expiries_in: dto.expiries_in,
+          categories_id: dto.categoriesId,
+          name: dto.name,
+        })
+        .returning("*");
 
-    const [created] = await db<Checklist>("checklists")
-      .insert({
-        name: dto.name,
-        categories: db.raw("?::jsonb", [categoriesJson]),
-      })
-      .returning("*");
+      const questions: CheckListQuestions[] = dto.question_list.map(
+        (question) => ({
+          ...question,
+          checkList_id: created.id,
+        }),
+      );
+      await trx<CheckListQuestions>(
+        CheckListQuestionFieldsProperties.tableName,
+      ).insert(questions);
 
-    return created;
+      return created;
+    });
   }
 
   async findAll(): Promise<Checklist[]> {
