@@ -8,6 +8,7 @@ import {
   Put,
   ParseIntPipe,
   NotFoundException,
+  UseGuards,
 } from "@nestjs/common";
 import { ChecklistsService } from "./checklists.service";
 import { CreateCheckListDto } from "./dtos/create-checklist.dto";
@@ -20,6 +21,7 @@ import {
 } from "@nestjs/swagger";
 import { CheckList, Checklist } from "./entities/checklist.entity";
 import { BaseMessages } from "@shared/enums";
+import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -42,6 +44,7 @@ export class ChecklistsController {
   @ApiCreatedResponse({
     type: CheckList,
   })
+  @UseGuards(JwtAuthGuard)
   create(@Body() dto: CreateCheckListDto) {
     return this.service.create(dto);
   }

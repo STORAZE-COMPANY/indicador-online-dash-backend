@@ -31,7 +31,7 @@ export class CategoriesController {
   @ApiOkResponse({
     type: [Categories],
   })
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiUnauthorizedResponse({
     description: BaseMessages.unAuthorizedUser,
     type: UnauthorizedException,

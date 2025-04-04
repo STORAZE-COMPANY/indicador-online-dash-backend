@@ -31,6 +31,7 @@ export class EmployeesController {
     description: BaseMessages.alreadyExists,
     type: ConflictException,
   })
+  @UseGuards(JwtAuthGuard)
   create(@Body() dto: CreateEmployeeDto) {
     return this.service.create(dto);
   }
