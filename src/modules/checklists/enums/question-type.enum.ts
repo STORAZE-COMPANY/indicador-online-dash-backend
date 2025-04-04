@@ -4,24 +4,16 @@ export enum QuestionType {
   FILE_UPLOAD = "Upload de arquivo",
 }
 
-export enum CheckListResponseMessages {
-  notFound = "CheckList não encontrada",
-}
-export enum CheckListFieldsProperties {
-  tableName = "checkList",
+export enum CheckListMultipleChoiceFieldsProperties {
+  choice = "Escolha",
+  isAnomaly = "É anomalia",
 
-  name = "Nome do checklist",
-  id = "ID da empresa",
-  expiries_in = "Data de expiração",
-
-  created_at = "Data de criação",
-  updated_at = "Última atualização",
-  categories_id = "ID da categoria",
-
-  question_list = "Lista de perguntas",
+  tableName = "questionsChoices",
 }
 export enum CheckListQuestionFieldsProperties {
   question = "Pergunta",
+
+  list = "Lista de perguntas",
 
   tableName = "questions",
 
