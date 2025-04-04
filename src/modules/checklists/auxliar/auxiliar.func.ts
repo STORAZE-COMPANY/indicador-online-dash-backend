@@ -15,6 +15,7 @@ import { QuestionsFormatted } from "../interfaces/questions.interface";
 import { checkListMessages } from "../enums/messages.enum";
 import { InternalServerErrorException } from "@nestjs/common";
 import { CheckListItemFieldsProperties } from "../enums/checkListItem.enum";
+import { Anomalies } from "../enums/anomaly.enum";
 
 /**
  * Cria um item de checklist no banco de dados utilizando uma transação.
@@ -91,7 +92,7 @@ export async function handleCreateQuestion(
 export async function handleCreateMultipleChoice(
   multipleChoice: {
     choice: string;
-    isAnomaly: boolean;
+    anomaly?: Anomalies | null;
     question_id: string;
   }[],
   trx: Knex.Transaction,
@@ -178,7 +179,7 @@ export function handleBuildChoicesToInsert(
     .map((item) =>
       (item.multiple_choice || []).map((choice) => ({
         choice: choice.choice,
-        isAnomaly: choice.isAnomaly,
+        anomaly: choice.anomaly,
         question_id: item.id,
       })),
     )
