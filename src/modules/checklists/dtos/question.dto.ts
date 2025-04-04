@@ -72,7 +72,7 @@ export class CheckListQuestionsDto {
 
   @ApiProperty({
     description: CheckListQuestionFieldsProperties.tableName,
-    type: CheckListMultipleChoiceDto,
+    type: [CheckListMultipleChoiceDto],
 
     required: false,
   })
