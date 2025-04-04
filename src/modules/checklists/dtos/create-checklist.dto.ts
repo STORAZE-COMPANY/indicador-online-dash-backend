@@ -1,9 +1,10 @@
-import { IsNotEmpty, IsString, Matches } from "class-validator";
-import { CheckListFieldsProperties } from "../enums/question-type.enum";
+import { IsNotEmpty, IsString, Matches, ValidateNested } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { BaseMessagesValidations } from "@shared/enums";
 import { notBlankRegex } from "@shared/validations/annotationsValidations";
 import { CreateCheckListItemDto } from "./check_list_item.dto";
+import { CheckListFieldsProperties } from "../enums/checkList.enum";
+import { Type } from "class-transformer";
 
 export class CreateCheckListDto {
   @ApiProperty({
@@ -23,15 +24,10 @@ export class CreateCheckListDto {
   expiries_in: Date;
 
   @ApiProperty({
-    description: CheckListFieldsProperties.categories_id,
-  })
-  @IsString()
-  @Matches(notBlankRegex, { message: BaseMessagesValidations.notBlank })
-  @IsNotEmpty({ message: BaseMessagesValidations.notEmpty })
-  categoriesId: string;
-
-  @ApiProperty({
+    type: CreateCheckListItemDto,
     description: CheckListFieldsProperties.checkListItem,
   })
+  @Type(() => CreateCheckListItemDto)
+  @ValidateNested()
   checkListItem: CreateCheckListItemDto;
 }

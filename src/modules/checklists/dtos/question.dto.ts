@@ -3,12 +3,14 @@ import {
   IsBoolean,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   ValidateNested,
 } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
+  AnswerType,
   CheckListMultipleChoiceFieldsProperties,
   CheckListQuestionFieldsProperties,
   QuestionType,
@@ -42,7 +44,15 @@ export class CheckListQuestionsDto {
   question: string;
 
   @ApiProperty({
+    description: CheckListQuestionFieldsProperties.answerType,
+    enum: AnswerType,
+  })
+  @IsEnum(AnswerType)
+  answerType: AnswerType;
+
+  @ApiProperty({
     description: CheckListQuestionFieldsProperties.type,
+    enum: QuestionType,
   })
   @IsEnum(QuestionType)
   type: QuestionType;
@@ -53,14 +63,17 @@ export class CheckListQuestionsDto {
   @IsBoolean()
   isRequired: boolean;
 
+  @ApiPropertyOptional({
+    description: CheckListQuestionFieldsProperties.prompt,
+  })
+  @IsString()
+  @IsOptional()
+  iaPrompt?: string;
+
   @ApiProperty({
     description: CheckListQuestionFieldsProperties.tableName,
-    example: [
-      {
-        choice: "Sim",
-        isAnomaly: false,
-      },
-    ],
+    type: CheckListMultipleChoiceDto,
+
     required: false,
   })
   @IsArray()

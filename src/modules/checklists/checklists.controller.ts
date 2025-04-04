@@ -19,7 +19,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { CheckList, Checklist } from "./entities/checklist.entity";
-import { CheckListResponseMessages } from "./enums/question-type.enum";
+import { BaseMessages } from "@shared/enums";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -69,7 +69,7 @@ export class ChecklistsController {
     type: [Checklist],
   })
   @ApiNotFoundResponse({
-    description: CheckListResponseMessages.notFound,
+    description: BaseMessages.notFound,
     type: NotFoundException,
   })
   findOne(@Param("id", ParseIntPipe) id: number) {
@@ -88,7 +88,7 @@ export class ChecklistsController {
     type: Checklist,
   })
   @ApiNotFoundResponse({
-    description: CheckListResponseMessages.notFound,
+    description: BaseMessages.notFound,
     type: NotFoundException,
   })
   update(
@@ -107,7 +107,7 @@ export class ChecklistsController {
   @Delete(":id")
   @ApiOkResponse()
   @ApiNotFoundResponse({
-    description: CheckListResponseMessages.notFound,
+    description: BaseMessages.notFound,
     type: NotFoundException,
   })
   remove(@Param("id", ParseIntPipe) id: number) {

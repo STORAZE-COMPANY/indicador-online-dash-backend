@@ -1,7 +1,4 @@
-import {
-  CheckListFieldsProperties,
-  QuestionType,
-} from "../enums/question-type.enum";
+import { QuestionType } from "../enums/question-type.enum";
 
 import { ApiProperty } from "@nestjs/swagger";
 import {
@@ -11,8 +8,10 @@ import {
   IsArray,
   ValidateNested,
   IsDate,
+  IsOptional,
 } from "class-validator";
 import { Type } from "class-transformer";
+import { CheckListFieldsProperties } from "../enums/checkList.enum";
 
 export class Question {
   @ApiProperty({
@@ -112,11 +111,6 @@ export class CheckList {
   })
   @IsString()
   name: string;
-  @ApiProperty({
-    description: CheckListFieldsProperties.categories_id,
-  })
-  @IsString()
-  categories_id: string;
 
   @ApiProperty({
     example: "2024-03-27T12:00:00Z",
@@ -141,6 +135,8 @@ export class CheckList {
 }
 export class CheckListQuestions {
   @IsString()
+  id: string;
+  @IsString()
   question: string;
 
   @IsString()
@@ -151,4 +147,18 @@ export class CheckListQuestions {
 
   @IsString()
   checkList_id: string;
+
+  @IsString()
+  @IsOptional()
+  IAPrompt: string | null;
+}
+export class CheckListMultipleChoice {
+  @IsString()
+  choice: string;
+
+  @IsBoolean()
+  isAnomaly: boolean;
+
+  @IsString()
+  question_id: string;
 }

@@ -1,4 +1,5 @@
 export enum CheckListItemFieldsProperties {
+  tableName = "checkListItem",
   id = "id",
   checkList_id = "checkList_id",
 
