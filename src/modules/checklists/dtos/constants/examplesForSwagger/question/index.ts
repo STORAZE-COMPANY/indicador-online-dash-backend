@@ -1,3 +1,4 @@
+import { Anomalies } from "@modules/checklists/enums/anomaly.enum";
 import {
   AnswerType,
   QuestionType,
@@ -12,11 +13,10 @@ const questionExample01 = [
     multiple_choice: [
       {
         choice: "Sim",
-        isAnomaly: true,
+        anomaly: Anomalies.MEDIUM,
       },
       {
         choice: "Não",
-        isAnomaly: false,
       },
     ],
   },
@@ -39,15 +39,14 @@ const questionExample02 = [
     multiple_choice: [
       {
         choice: "Sim",
-        isAnomaly: false,
       },
       {
         choice: "Não",
-        isAnomaly: true,
+        anomaly: Anomalies.MEDIUM,
       },
       {
         choice: "N/A",
-        isAnomaly: true,
+        anomaly: Anomalies.MEDIUM,
       },
     ],
   },

@@ -18,6 +18,7 @@ import {
 import { BaseMessagesValidations } from "@shared/enums";
 import { notBlankRegex } from "@shared/validations/annotationsValidations";
 import { Type } from "class-transformer";
+import { Anomalies } from "@modules/checklists/enums/anomaly.enum";
 
 export class CheckListMultipleChoiceDto {
   @ApiProperty({
@@ -30,9 +31,12 @@ export class CheckListMultipleChoiceDto {
 
   @ApiProperty({
     description: CheckListMultipleChoiceFieldsProperties.isAnomaly,
+    enum: Anomalies,
+    nullable: true,
   })
-  @IsBoolean()
-  isAnomaly: boolean;
+  @IsOptional()
+  @IsEnum([Anomalies.HIGH, Anomalies.MEDIUM, Anomalies.LOW])
+  anomaly: Anomalies | null;
 }
 export class CheckListQuestionsDto {
   @ApiProperty({
