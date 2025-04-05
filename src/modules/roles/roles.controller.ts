@@ -2,7 +2,7 @@ import {
   Controller,
   ForbiddenException,
   Get,
-  Req,
+  Request,
   UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
@@ -28,14 +28,14 @@ export class RolesController {
   @ApiOkResponse({
     type: [Roles],
   })
- /*  @UseGuards(JwtAuthGuard) */
+  @UseGuards(JwtAuthGuard)
   @ApiUnauthorizedResponse({
     description: BaseMessages.unAuthorizedUser,
     type: UnauthorizedException,
   })
-  findList() {
-   /*  if (!request.user)
-      throw new ForbiddenException(BaseMessages.unAuthorizedUser); */
-    return this.service.findAllRolesByPermission({ role:Role.superAdmin});
+  findList(@Request() request: CustomRequest) {
+    if (!request.user)
+      throw new ForbiddenException(BaseMessages.unAuthorizedUser);
+    return this.service.findAllRolesByPermission({ role: Role.superAdmin });
   }
 }
