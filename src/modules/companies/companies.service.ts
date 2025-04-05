@@ -31,7 +31,8 @@ export class CompaniesService {
       throw new ConflictException(CompaniesResponseMessages.cnpjAlreadyExists);
 
     const harshPassword = await bcrypt.hash(
-      this.generateRandomCode().toString(),
+      //this.generateRandomCode().toString(),
+      "senha123",
       8,
     );
 
