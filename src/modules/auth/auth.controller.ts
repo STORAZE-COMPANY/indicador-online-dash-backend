@@ -61,7 +61,7 @@ import { BaseMessages } from "@shared/enums";
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post(AuthRoutes.loginUrl)
+  @Post(AuthRoutes.loginDashboardUrl)
   @ApiNotFoundResponse({
     description: AuthResponseMessages.userNotFound,
     type: NotFoundException,
@@ -74,8 +74,27 @@ export class AuthController {
     description: AuthResponseMessages.passwordIncorrect,
     type: UnauthorizedException,
   })
-  async login(@Body() loginDto: LoginDto) {
-    return await this.authService.validateUser(
+  async loginDashboard(@Body() loginDto: LoginDto) {
+    return await this.authService.loginOnDashboard(
+      loginDto.email,
+      loginDto.password,
+    );
+  }
+  @Post(AuthRoutes.loginMobileUrl)
+  @ApiNotFoundResponse({
+    description: AuthResponseMessages.userNotFound,
+    type: NotFoundException,
+  })
+  @ApiCreatedResponse({
+    type: ResponseAuthDto,
+    description: AuthResponseMessages.loginResponse,
+  })
+  @ApiForbiddenResponse({
+    description: AuthResponseMessages.passwordIncorrect,
+    type: UnauthorizedException,
+  })
+  async loginMobile(@Body() loginDto: LoginDto) {
+    return await this.authService.loginOnMobile(
       loginDto.email,
       loginDto.password,
     );
