@@ -85,6 +85,7 @@ export class AuthController {
     type: ResponseAuthDto,
     description: AuthResponseMessages.refreshTokenResponse,
   })
+  @UseGuards(JwtAuthGuard)
   refreshToken(@Body() { refreshToken }: TokenDto) {
     return this.authService.refreshTokens(refreshToken);
   }

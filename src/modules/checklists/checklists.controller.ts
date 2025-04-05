@@ -8,9 +8,10 @@ import {
   Put,
   ParseIntPipe,
   NotFoundException,
+  UseGuards,
 } from "@nestjs/common";
 import { ChecklistsService } from "./checklists.service";
-import { CreateChecklistDto } from "./dtos/create-checklist.dto";
+import { CreateCheckListDto } from "./dtos/create-checklist.dto";
 import { UpdateChecklistDto } from "./dtos/update-checklist.dto";
 import {
   ApiCreatedResponse,
@@ -18,8 +19,9 @@ import {
   ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { Checklist } from "./entities/checklist.entity";
-import { CheckListResponseMessages } from "./enums/question-type.enum";
+import { CheckList, Checklist } from "./entities/checklist.entity";
+import { BaseMessages } from "@shared/enums";
+import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -40,10 +42,10 @@ export class ChecklistsController {
    */
   @Post()
   @ApiCreatedResponse({
-    type: Checklist,
+    type: CheckList,
   })
-  create(@Body() dto: CreateChecklistDto) {
-    console.log("dto", JSON.stringify(dto));
+  @UseGuards(JwtAuthGuard)
+  create(@Body() dto: CreateCheckListDto) {
     return this.service.create(dto);
   }
 
@@ -70,7 +72,7 @@ export class ChecklistsController {
     type: [Checklist],
   })
   @ApiNotFoundResponse({
-    description: CheckListResponseMessages.notFound,
+    description: BaseMessages.notFound,
     type: NotFoundException,
   })
   findOne(@Param("id", ParseIntPipe) id: number) {
@@ -89,7 +91,7 @@ export class ChecklistsController {
     type: Checklist,
   })
   @ApiNotFoundResponse({
-    description: CheckListResponseMessages.notFound,
+    description: BaseMessages.notFound,
     type: NotFoundException,
   })
   update(
@@ -108,7 +110,7 @@ export class ChecklistsController {
   @Delete(":id")
   @ApiOkResponse()
   @ApiNotFoundResponse({
-    description: CheckListResponseMessages.notFound,
+    description: BaseMessages.notFound,
     type: NotFoundException,
   })
   remove(@Param("id", ParseIntPipe) id: number) {

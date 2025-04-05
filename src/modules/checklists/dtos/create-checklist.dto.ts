@@ -1,86 +1,42 @@
 import {
   IsArray,
-  IsBoolean,
-  IsEnum,
-  IsNumber,
+  IsNotEmpty,
   IsString,
+  Matches,
   ValidateNested,
 } from "class-validator";
-import { Type } from "class-transformer";
-import { QuestionType } from "../enums/question-type.enum";
 import { ApiProperty } from "@nestjs/swagger";
+import { BaseMessagesValidations } from "@shared/enums";
+import { notBlankRegex } from "@shared/validations/annotationsValidations";
+import { CreateCheckListItemDto } from "./check_list_item.dto";
+import { CheckListFieldsProperties } from "@modules/checklists/enums/checkList.enum";
+import { Type } from "class-transformer";
+import { checkListItemExample } from "@modules/checklists/dtos/constants/examplesForSwagger/checkListItem";
 
-class QuestionDto {
-  @IsString()
+export class CreateCheckListDto {
   @ApiProperty({
-    example: "Qual é a sua idade?",
-    description: "Texto da pergunta",
-  })
-  questionText: string;
-
-  @IsEnum(QuestionType)
-  @ApiProperty({
-    example: "multiple-choice",
-    description: "Tipo da pergunta",
-    enum: [
-      QuestionType.FILE_UPLOAD,
-      QuestionType.MULTIPLE_CHOICE,
-      QuestionType.TEXT,
-    ],
-  })
-  questionType: QuestionType;
-
-  @IsArray()
-  @ApiProperty({ type: [String], description: "Opções da pergunta" })
-  options: string[];
-
-  @IsBoolean()
-  @ApiProperty({
-    example: true,
-    description: "Indica se a pergunta é obrigatória",
-  })
-  isRequired: boolean;
-
-  @IsNumber()
-  @ApiProperty({
-    example: 1,
-    description: "Posição da pergunta",
-  })
-  position: number;
-}
-
-class CategoryDto {
-  @IsString()
-  @ApiProperty({
-    example: "Categoria de Segurança",
-    description: "Nome da categoria",
-  })
-  categoryName: string;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => QuestionDto)
-  @ApiProperty({
-    type: [QuestionDto],
-    description: "Lista de perguntas dentro da categoria",
-  })
-  questions: QuestionDto[];
-}
-
-export class CreateChecklistDto {
-  @IsString()
-  @ApiProperty({
+    description: CheckListFieldsProperties.name,
     example: "Checklist de Segurança",
-    description: "Nome do checklist",
   })
+  @IsString()
+  @Matches(notBlankRegex, { message: BaseMessagesValidations.notBlank })
+  @IsNotEmpty({ message: BaseMessagesValidations.notEmpty })
   name: string;
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CategoryDto)
   @ApiProperty({
-    type: [CategoryDto],
-    description: "Lista de categorias do checklist",
+    example: "2023-10-01T00:00:00.000Z",
+    description: CheckListFieldsProperties.expiries_in,
   })
-  categories: CategoryDto[];
+  @IsString()
+  expiries_in: Date;
+
+  @ApiProperty({
+    type: [CreateCheckListItemDto],
+    description: CheckListFieldsProperties.checkListItem,
+    example: checkListItemExample,
+  })
+  @Type(() => CreateCheckListItemDto)
+  @ValidateNested({ each: true })
+  @IsArray()
+  checkListItem: CreateCheckListItemDto[];
 }

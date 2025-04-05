@@ -7,8 +7,11 @@ import {
   IsNumber,
   IsArray,
   ValidateNested,
+  IsDate,
+  IsOptional,
 } from "class-validator";
 import { Type } from "class-transformer";
+import { CheckListFieldsProperties } from "../enums/checkList.enum";
 
 export class Question {
   @ApiProperty({
@@ -98,4 +101,64 @@ export class Checklist {
     required: false,
   })
   updated_at?: Date;
+}
+export class CheckList {
+  @ApiProperty({ description: CheckListFieldsProperties.id })
+  @IsString()
+  id: string;
+  @ApiProperty({
+    description: CheckListFieldsProperties.name,
+  })
+  @IsString()
+  name: string;
+
+  @ApiProperty({
+    example: "2024-03-27T12:00:00Z",
+    description: CheckListFieldsProperties.expiries_in,
+  })
+  @IsDate()
+  expiries_in?: Date;
+
+  @ApiProperty({
+    example: "2024-03-27T12:00:00Z",
+    description: CheckListFieldsProperties.created_at,
+  })
+  @IsDate()
+  created_at?: Date;
+
+  @ApiProperty({
+    example: "2024-03-27T12:00:00Z",
+    description: CheckListFieldsProperties.updated_at,
+  })
+  @IsDate()
+  updated_at?: Date;
+}
+export class CheckListQuestions {
+  @IsString()
+  id: string;
+  @IsString()
+  question: string;
+
+  @IsString()
+  type: string;
+
+  @IsBoolean()
+  isRequired: boolean;
+
+  @IsString()
+  checkList_id: string;
+
+  @IsString()
+  @IsOptional()
+  IAPrompt: string | null;
+}
+export class CheckListMultipleChoice {
+  @IsString()
+  choice: string;
+
+  @IsBoolean()
+  isAnomaly: boolean;
+
+  @IsString()
+  question_id: string;
 }

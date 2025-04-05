@@ -1,23 +1,62 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Checklist } from "./entities/checklist.entity";
-import { CreateChecklistDto } from "./dtos/create-checklist.dto";
+import { CheckList, Checklist } from "./entities/checklist.entity";
+import { CreateCheckListDto } from "./dtos/create-checklist.dto";
 import { UpdateChecklistDto } from "./dtos/update-checklist.dto";
 import db from "database/connection";
-import { CheckListResponseMessages } from "./enums/question-type.enum";
+
+import { BaseMessages } from "@shared/enums";
+import { CheckListFieldsProperties } from "./enums/checkList.enum";
+
+import {
+  handleBuildChoicesToInsert,
+  handleBuildQuestionsToInsert,
+  handleCreateCheckListItem,
+  handleCreateMultipleChoice,
+  handleCreateQuestion,
+} from "./auxliar/auxiliar.func";
 
 @Injectable()
 export class ChecklistsService {
-  async create(dto: CreateChecklistDto): Promise<Checklist> {
-    const categoriesJson = JSON.stringify(dto.categories);
+  async create(dto: CreateCheckListDto): Promise<CheckList> {
+    return await db.transaction<CheckList>(async (trx) => {
+      const [created] = await trx<CheckList>(
+        CheckListFieldsProperties.tableName,
+      )
+        .insert({
+          expiries_in: dto.expiries_in,
 
-    const [created] = await db<Checklist>("checklists")
-      .insert({
-        name: dto.name,
-        categories: db.raw("?::jsonb", [categoriesJson]),
-      })
-      .returning("*");
+          name: dto.name,
+        })
+        .returning("*");
 
-    return created;
+      const checkListItemCreated = await handleCreateCheckListItem(
+        dto.checkListItem.map((item) => ({
+          categories_id: item.categoriesId,
+          checkList_id: created.id,
+        })),
+        trx,
+      );
+      const allQuestionsToInsert = handleBuildQuestionsToInsert(
+        dto.checkListItem,
+        checkListItemCreated,
+      );
+
+      const questionsCreated = await handleCreateQuestion(
+        allQuestionsToInsert,
+        trx,
+      );
+
+      if (questionsCreated.some((item) => item.type === "Múltipla escolha")) {
+        const choicesToInsert = handleBuildChoicesToInsert(
+          dto.checkListItem.map((item) => item.question_list).flat(),
+          questionsCreated,
+        );
+
+        await handleCreateMultipleChoice(choicesToInsert, trx);
+      }
+
+      return created;
+    });
   }
 
   async findAll(): Promise<Checklist[]> {
@@ -33,7 +72,7 @@ export class ChecklistsService {
     const checklist = await db<Checklist>("checklists").where({ id }).first();
 
     if (!checklist) {
-      throw new NotFoundException(CheckListResponseMessages.notFound);
+      throw new NotFoundException(BaseMessages.notFound);
     }
 
     return checklist;
