@@ -7,17 +7,15 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcryptjs";
 import db from "database/connection";
 import { AuthResponseMessages, TokenProperties } from "./enums";
-import {
-  SelectByWhereAuth,
-  AuthResponse,
-  TokenProps,
-  UserAuth,
-  EntityToAuth,
-} from "./interface";
-import { Knex } from "knex";
+import { AuthResponse, UserAuth } from "./interface";
 import { Employee } from "@modules/employees/entities/employee.entity";
 import { Company } from "@modules/companies/entities/company.entity";
-import { Role } from "@shared/enums";
+import {
+  buildUserAuth,
+  generateJwtToken,
+  generateSelect,
+  generateWhereBuilder,
+} from "./auxiliar/auxiliar.func";
 
 @Injectable()
 export class AuthService {
@@ -33,27 +31,57 @@ export class AuthService {
    * @throws `NotFoundException` - Caso o usuário com o email fornecido não seja encontrado.
    * @throws `ForbiddenException` - Caso a senha fornecida esteja incorreta.
    */
-  async validateUser(email: string, password: string): Promise<AuthResponse> {
+  async loginOnDashboard(
+    email: string,
+    password: string,
+  ): Promise<AuthResponse> {
     const user = await this.findAuthByEmailAndRole(email);
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch)
       throw new ForbiddenException(AuthResponseMessages.passwordIncorrect);
 
-    const access_token = this.generateJwtToken({
+    const access_token = generateJwtToken({
       ...user,
       expiresIn: TokenProperties.accessTokenExpiriesIn,
+      jwtService: this.jwtService,
     });
 
-    const refresh_token = this.generateJwtToken({
+    const refresh_token = generateJwtToken({
       ...user,
       expiresIn: TokenProperties.refreshTokenExpiriesIn,
+      jwtService: this.jwtService,
     });
 
     return {
       access_token,
       refresh_token,
-      user: this.buildUserAuth(user),
+      user: buildUserAuth(user),
+    };
+  }
+  async loginOnMobile(email: string, password: string): Promise<AuthResponse> {
+    const user = await this.findAuthByEmailAndRole(email, true);
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch)
+      throw new ForbiddenException(AuthResponseMessages.passwordIncorrect);
+
+    const access_token = generateJwtToken({
+      ...user,
+      expiresIn: TokenProperties.accessTokenExpiriesIn,
+      jwtService: this.jwtService,
+    });
+
+    const refresh_token = generateJwtToken({
+      ...user,
+      expiresIn: TokenProperties.refreshTokenExpiriesIn,
+      jwtService: this.jwtService,
+    });
+
+    return {
+      access_token,
+      refresh_token,
+      user: buildUserAuth(user),
     };
   }
 
@@ -71,20 +99,22 @@ export class AuthService {
     if (!userExist)
       throw new NotFoundException(AuthResponseMessages.userNotFound);
 
-    const access_token = this.generateJwtToken({
+    const access_token = generateJwtToken({
       ...userExist,
       expiresIn: TokenProperties.accessTokenExpiriesIn,
+      jwtService: this.jwtService,
     });
 
-    const refresh_token = this.generateJwtToken({
+    const refresh_token = generateJwtToken({
       ...userExist,
       expiresIn: TokenProperties.refreshTokenExpiriesIn,
+      jwtService: this.jwtService,
     });
 
     return {
       access_token,
       refresh_token,
-      user: this.buildUserAuth(userExist),
+      user: buildUserAuth(userExist),
     };
   }
   /**
@@ -110,102 +140,39 @@ export class AuthService {
    */
   async findAuthByEmailAndRole(
     email: string,
+    isLoginOnMobile?: boolean,
   ): Promise<UserAuth & { password: string }> {
     let userAuth: (UserAuth & { password: string }) | null = null;
 
     userAuth = await db<Employee>("employees")
       .join("roles", "employees.role_id", "roles.id")
-      .where(this.generateWhereBuilder({ email, entityName: "employees" }))
+      .where(
+        generateWhereBuilder({
+          email,
+          entityName: "employees",
+          isLoginOnMobile,
+        }),
+      )
       .first()
-      .select(this.generateSelect("employees"));
+      .select(generateSelect("employees"));
 
     if (!userAuth) {
       userAuth = await db<Company>("companies")
         .join("roles", "companies.role_id", "roles.id")
-        .where(this.generateWhereBuilder({ email, entityName: "companies" }))
+        .where(
+          generateWhereBuilder({
+            email,
+            entityName: "companies",
+            isLoginOnMobile,
+          }),
+        )
         .first()
-        .select(this.generateSelect("companies"));
+        .select(generateSelect("companies"));
     }
 
     if (!userAuth)
       throw new NotFoundException(AuthResponseMessages.userNotFound);
 
     return userAuth;
-  }
-  /**
-   * Gera um token JWT para autenticação do usuário.
-   *
-   * @param {TokenProps} param0 - Objeto contendo as informações necessárias para gerar o token.
-   * @param {string} param0.email - O e-mail do usuário.
-   * @param {string} param0.expiresIn - O tempo de expiração do token.
-   * @param {string} param0.id - O identificador único do usuário.
-   * @param {string} param0.name - O nome do usuário.
-   * @param {string} param0.role - O papel ou função do usuário no sistema.
-   * @returns {string} O token JWT gerado.
-   */
-  generateJwtToken({ email, expiresIn, id, name, role }: TokenProps) {
-    const user: UserAuth = {
-      id,
-      email,
-      role,
-      name,
-    };
-    return this.jwtService.sign(user, {
-      expiresIn,
-    });
-  }
-
-  /**
-   * Constrói um objeto de autenticação do usuário a partir de um objeto de entrada que inclui a senha.
-   *
-   * @param user - Objeto do tipo `UserAuth` que também contém a propriedade `password`.
-   * @returns Um novo objeto `UserAuth` contendo apenas as propriedades necessárias para autenticação.
-   */
-  buildUserAuth(user: UserAuth & { password: string }): UserAuth {
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    };
-  }
-  /**
-   * Gera uma função de construção de consulta (query builder) para filtrar registros
-   * com base no email fornecido e excluindo aqueles com o papel de usuário comum (Role.user).
-   *
-   * @param email - O email utilizado como critério de filtro na consulta.
-   * @returns Uma função que recebe um `Knex.QueryBuilder` e aplica os filtros especificados.
-   */
-  generateWhereBuilder({
-    email,
-    entityName,
-  }: {
-    email: string;
-    entityName: EntityToAuth;
-  }) {
-    return (builder: Knex.QueryBuilder<SelectByWhereAuth>) => {
-      builder
-        .join("roles", `${entityName}.role_id`, "roles.id")
-        .where(`${entityName}.email`, email)
-        .andWhereNot("roles.name", Role.user);
-    };
-  }
-
-  /**
-   * Gera uma lista de campos selecionados para uma entidade específica.
-   *
-   * @param entityName - O nome da entidade para a qual os campos serão gerados.
-   * @returns Um array contendo os campos selecionados no formato `${entityName}.campo`.
-   */
-  generateSelect(entityName: EntityToAuth) {
-    const fields = {
-      id: `${entityName}.id`,
-      name: `${entityName}.name`,
-      email: `${entityName}.email`,
-      role_id: `${entityName}.role_id`,
-      password: `${entityName}.password`,
-      role_name: "roles.name as role",
-    };
-    return Object.values(fields);
   }
 }

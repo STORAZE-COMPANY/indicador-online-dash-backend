@@ -15,7 +15,8 @@ export enum AuthResponseMessages {
 export enum AuthRoutes {
   baseUrl = "auth",
   refreshTokenUrl = "refreshToken",
-  loginUrl = "login",
+  loginDashboardUrl = "loginDashboard",
+  loginMobileUrl = "loginMobile",
   userAuthUrl = "userAuth",
 }
 
