@@ -9,6 +9,7 @@ import { ChecklistsModule } from "@modules/checklists/checklists.module";
 import { RolesModule } from "@modules/roles/roles.module";
 import { CategoriesModule } from "@modules/categories/categories.module";
 import { QuestionsModule } from "@modules/questions/questions.module";
+import { AnswersModule } from "@modules/answers/answers.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { QuestionsModule } from "@modules/questions/questions.module";
     RolesModule,
     CategoriesModule,
     QuestionsModule,
+    AnswersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
