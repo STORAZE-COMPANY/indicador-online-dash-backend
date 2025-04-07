@@ -21,6 +21,9 @@ export class Employee {
 
   @ApiProperty({ description: EmployeesFieldsProperties.roleId })
   role_id: string;
+
+  @ApiProperty({ description: EmployeesFieldsProperties.roleId })
+  questionId: string | null;
 }
 
 export class CreateEmployeeResponse {

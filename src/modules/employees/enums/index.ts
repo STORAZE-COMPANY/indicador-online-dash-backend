@@ -16,4 +16,19 @@ export enum EmployeesFieldsProperties {
   company_id = "ID da empresa do funcionário",
   password = "Senha do funcionário",
   roleId = "Id do nível do funcionário",
+
+  questionId = "ID da pergunta do funcionário",
+}
+
+export enum EmployeesFields {
+  tableName = "employees",
+  id = "id",
+  name = "name",
+  email = "email",
+  phone = "phone",
+  company_id = "company_id",
+  password = "password",
+  roleId = "role_id",
+
+  questionId = "questionId",
 }

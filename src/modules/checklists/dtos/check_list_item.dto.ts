@@ -58,3 +58,15 @@ export class CheckListItemFormattedList extends CheckListItem {
   @IsBoolean()
   hasAnomalies: boolean;
 }
+export class CheckListForSpecificEmployee {
+  @ApiProperty({
+    description: "ID do checklist",
+  })
+  checklistItemId: string;
+
+  @ApiProperty({
+    description: "Nome do checklist",
+  })
+  @IsString()
+  checklistName: string;
+}

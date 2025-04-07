@@ -12,4 +12,6 @@ export class Question {
   checkListItem_id: string;
 
   IAPrompt: string | null;
+
+  employee_id: string | null;
 }
