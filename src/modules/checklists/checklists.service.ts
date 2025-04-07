@@ -1,14 +1,13 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { CheckList, Checklist } from "./entities/checklist.entity";
+import { Injectable } from "@nestjs/common";
+import { CheckList } from "./entities/checklist.entity";
 import { CreateCheckListDto } from "./dtos/create-checklist.dto";
-import { UpdateChecklistDto } from "./dtos/update-checklist.dto";
 import db from "database/connection";
 
-import { BaseMessages } from "@shared/enums";
 import { CheckListFieldsProperties } from "./enums/checkList.enum";
 
 import {
   buildCheckListItemQueryWithJoins,
+  buildCheckListWithEmployeeRelatedQueryWithJoins,
   buildQuestionsRelatedQueryWithJoins,
   handleBuildChoicesToInsert,
   handleBuildQuestionsToInsert,
@@ -16,11 +15,17 @@ import {
   handleCreateMultipleChoice,
   handleCreateQuestion,
 } from "./auxliar/auxiliar.func";
-import { FindParamsDto } from "@modules/checklists/dtos/find-params.dto";
+import {
+  employeeIdDto,
+  FindParamsDto,
+} from "@modules/checklists/dtos/find-params.dto";
 import { CheckListItem } from "./entities/checkListItem.entity";
 import { CheckListItemFieldsProperties } from "./enums/checkListItem.enum";
 import { CompaniesFieldsProperties } from "@modules/companies/enums";
-import { CheckListItemFormattedList } from "./dtos/check_list_item.dto";
+import {
+  CheckListForSpecificEmployee,
+  CheckListItemFormattedList,
+} from "./dtos/check_list_item.dto";
 import {
   ChoicesFieldsProperties,
   QuestionFieldsProperties,
@@ -119,32 +124,18 @@ export class ChecklistsService {
     return checkListItemWithQuestions;
   }
 
-  async findOne(id: number): Promise<Checklist> {
-    const checklist = await db<Checklist>("checklists").where({ id }).first();
+  async findPaginatedByEmployeeResponsible({
+    employeeId,
+  }: employeeIdDto): Promise<CheckListForSpecificEmployee[]> {
+    const checkListItemList: CheckListForSpecificEmployee[] =
+      await buildCheckListWithEmployeeRelatedQueryWithJoins(
+        db<CheckListItem>(CheckListItemFieldsProperties.tableName),
+        employeeId,
+      ).select([
+        `${CheckListItemFieldsProperties.tableName}.id as checklistId`,
+        `${CheckListFieldsProperties.tableName}.name as checklistName`,
+      ]);
 
-    if (!checklist) {
-      throw new NotFoundException(BaseMessages.notFound);
-    }
-
-    return checklist;
-  }
-
-  async update(id: number, dto: UpdateChecklistDto): Promise<Checklist> {
-    await this.findOne(id);
-    const [updated] = await db<Checklist>("checklists")
-      .where({ id })
-      .update({
-        name: dto.name,
-        categories: dto.categories,
-        updated_at: db.fn.now(),
-      })
-      .returning("*");
-
-    return updated;
-  }
-
-  async remove(id: number): Promise<void> {
-    await this.findOne(id);
-    await db("checklists").where({ id }).del();
+    return checkListItemList;
   }
 }

@@ -1,6 +1,12 @@
 import { registerDecorator, ValidationOptions } from "class-validator";
 
-export function IsNonBlankString(validationOptions?: ValidationOptions) {
+export function IsNonBlankString({
+  isOptional,
+  validationOptions,
+}: {
+  validationOptions?: ValidationOptions;
+  isOptional?: boolean;
+}) {
   return function (object: object, propertyName: string) {
     registerDecorator({
       name: "isNonBlankString",
@@ -9,8 +15,10 @@ export function IsNonBlankString(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: string) {
-          if (value === undefined || value === null) {
-            return true;
+          if (isOptional) {
+            if (value === undefined || value === null) {
+              return true; // Se o valor for opcional e não estiver presente, é considerado válido
+            }
           }
           return typeof value === "string" && value.trim().length > 0;
         },

@@ -9,12 +9,12 @@ class Period {
   @ApiPropertyOptional({
     description: BasePaginatedParams.startDate,
   })
-  @IsNonBlankString()
+  @IsNonBlankString({ isOptional: true })
   startDate: string;
   @ApiPropertyOptional({
     description: BasePaginatedParams.endDate,
   })
-  @IsNonBlankString()
+  @IsNonBlankString({ isOptional: true })
   endDate: string;
 
   @Validate(IsStartBeforeEndConstraint)
@@ -28,10 +28,24 @@ export class FindParamsDto extends Period {
   byCompany: number;
 
   @ApiProperty({ description: BasePaginatedParams.limit })
-  @IsNonBlankString()
+  @IsNonBlankString({
+    isOptional: false,
+  })
   limit: string;
 
   @ApiProperty({ description: BasePaginatedParams.page })
-  @IsNonBlankString()
+  @IsNonBlankString({
+    isOptional: false,
+  })
   page: string;
+}
+
+export class employeeIdDto {
+  @ApiProperty({
+    description: FindParamsEnum.employeeId,
+  })
+  @IsNonBlankString({
+    isOptional: false,
+  })
+  employeeId: string;
 }

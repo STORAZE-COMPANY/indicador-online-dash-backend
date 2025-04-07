@@ -24,6 +24,8 @@ import {
 } from "@modules/questions/enums";
 import { Question } from "@modules/questions/entities/question.entity";
 import { FindParamsDto } from "../dtos/find-params.dto";
+import { EmployeesFields } from "@modules/employees/enums";
+import { Employee } from "@modules/employees/entities/employee.entity";
 
 /**
  * Cria um item de checklist no banco de dados utilizando uma transação.
@@ -291,4 +293,68 @@ export function buildQuestionsRelatedQueryWithJoins(
         );
       }
     });
+}
+
+/**
+ * Constrói uma query SQL utilizando o Knex.js para buscar informações relacionadas a checklists,
+ * questões, escolhas e funcionários, com base no ID de um funcionário específico. A query inclui
+ * múltiplos joins entre tabelas relacionadas e aplica um filtro para limitar os resultados ao
+ * funcionário especificado.
+ *
+ * @param base - O objeto `Knex.QueryBuilder` base que será utilizado para construir a query.
+ *               Geralmente, este é o ponto de partida para a construção de queries no Knex.js.
+ * @param employeeId - O ID do funcionário que será utilizado como critério de filtro na query.
+ *                     Apenas os registros relacionados a este funcionário serão retornados.
+ *
+ * @returns Um objeto `Knex.QueryBuilder` que representa a query SQL construída, incluindo os joins
+ *          e filtros aplicados. A query resultante é distinta para evitar duplicação de registros.
+ *
+ * ### Estrutura da Query:
+ * - Realiza joins entre as tabelas:
+ *   - `CheckListFieldsProperties` e `CheckListItemFieldsProperties` com base no campo `checkList_id`.
+ *   - `QuestionFieldsProperties` e `CheckListItemFieldsProperties` com base no campo `id`.
+ *   - `EmployeesFields` e `QuestionFieldsProperties` com base no campo `questionId`.
+ *   - `ChoicesFieldsProperties` e `QuestionFieldsProperties` com base no campo `question_id` (join à esquerda).
+ * - Aplica um filtro para garantir que apenas registros relacionados ao `employeeId` especificado sejam retornados.
+ * - Garante que os resultados sejam distintos.
+ *
+ * ### Uso:
+ * Esta função é útil em cenários onde é necessário buscar informações detalhadas sobre checklists
+ * e suas relações com questões, escolhas e funcionários, filtrando por um funcionário específico.
+ */
+export function buildCheckListWithEmployeeRelatedQueryWithJoins(
+  base: Knex.QueryBuilder,
+  employeeId: string,
+): Knex.QueryBuilder {
+  return base
+    .join(
+      CheckListFieldsProperties.tableName,
+      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
+      `${CheckListFieldsProperties.tableName}.id`,
+    )
+
+    .join(
+      QuestionFieldsProperties.tableName,
+      `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
+      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.id}`,
+    )
+
+    .join(
+      EmployeesFields.tableName,
+      `${EmployeesFields.tableName}.${EmployeesFields.questionId}`,
+      `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
+    )
+
+    .leftJoin(
+      ChoicesFieldsProperties.tableName,
+      `${ChoicesFieldsProperties.tableName}.question_id`,
+      `${QuestionFieldsProperties.tableName}.id`,
+    )
+    .where((builder: Knex.QueryBuilder<Employee>) => {
+      builder.where(
+        `${EmployeesFields.tableName}.${EmployeesFields.id}`,
+        employeeId,
+      );
+    })
+    .distinct();
 }

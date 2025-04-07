@@ -4,8 +4,11 @@ import { CreateCheckListDto } from "./dtos/create-checklist.dto";
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { CheckList } from "./entities/checklist.entity";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
-import { CheckListItemFormattedList } from "./dtos/check_list_item.dto";
-import { FindParamsDto } from "./dtos/find-params.dto";
+import {
+  CheckListForSpecificEmployee,
+  CheckListItemFormattedList,
+} from "./dtos/check_list_item.dto";
+import { employeeIdDto, FindParamsDto } from "./dtos/find-params.dto";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -49,6 +52,24 @@ export class ChecklistsController {
     return this.service.findPaginatedByParams({
       ...dto,
       byCompany: dto.byCompany && Number(dto.byCompany),
+    });
+  }
+
+  @Get("by-employee")
+  @ApiOkResponse({
+    type: [CheckListForSpecificEmployee],
+  })
+  /**
+   * Retorna uma lista paginada de checklists associados a um funcionário específico.
+   *
+   * @param dto - Objeto contendo o ID do funcionário (`employeeId`) para o qual os checklists serão buscados.
+   * @returns Uma Promise que resolve para um array de checklists relacionados ao funcionário especificado.
+   */
+  findPaginatedByEmployeeParams(
+    @Query() dto: employeeIdDto,
+  ): Promise<CheckListForSpecificEmployee[]> {
+    return this.service.findPaginatedByEmployeeResponsible({
+      employeeId: dto.employeeId,
     });
   }
 }
