@@ -49,7 +49,6 @@ export class ChecklistsController {
     return this.service.findPaginatedByParams({
       ...dto,
       byCompany: dto.byCompany && Number(dto.byCompany),
-      hasAnomaly: dto.hasAnomaly && Boolean(dto.hasAnomaly),
     });
   }
 }

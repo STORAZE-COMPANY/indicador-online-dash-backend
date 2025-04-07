@@ -27,10 +27,6 @@ export class FindParamsDto extends Period {
   @IsOptional()
   byCompany: number;
 
-  @ApiPropertyOptional({ description: FindParamsEnum.hasAnomaly })
-  @IsOptional()
-  hasAnomaly: boolean;
-
   @ApiProperty({ description: BasePaginatedParams.limit })
   @IsNonBlankString()
   limit: string;
