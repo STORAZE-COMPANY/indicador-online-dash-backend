@@ -30,13 +30,6 @@ export class Company {
   isActive: boolean;
 
   @ApiProperty({
-    example: [101, 102, 103],
-    description: CompaniesFieldsProperties.checklistIds,
-    type: [Number],
-  })
-  checklistIds: number[];
-
-  @ApiProperty({
     example: "2024-03-27T12:00:00Z",
     description: CompaniesFieldsProperties.created_at,
     required: false,

@@ -7,8 +7,6 @@ import {
 import {
   IsString,
   IsBoolean,
-  IsArray,
-  IsNumber,
   IsEmail,
   Matches,
   IsNotEmpty,
@@ -22,7 +20,7 @@ export class CreateCompanyDto {
   name: string;
 
   @ApiProperty({
-    example: "12.345.678/0001-99",
+    example: "12345678000199",
     description: "CNPJ da empresa",
   })
   @IsString()
@@ -39,15 +37,6 @@ export class CreateCompanyDto {
   @ApiProperty({ description: "Email da empresa" })
   @IsEmail()
   email: string;
-
-  @ApiProperty({
-    example: [101, 102, 103],
-    description: "IDs dos checklists associados à empresa",
-    type: [Number],
-  })
-  @IsArray()
-  @IsNumber({}, { each: true })
-  checklistIds: number[];
 
   @ApiProperty({
     example: "1",
