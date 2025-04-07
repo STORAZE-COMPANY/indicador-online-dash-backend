@@ -1,7 +1,7 @@
 import { Controller, Post, Body, UseGuards, Query, Get } from "@nestjs/common";
 import { ChecklistsService } from "./checklists.service";
 import { CreateCheckListDto } from "./dtos/create-checklist.dto";
-import { ApiCreatedResponse, ApiTags } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { CheckList } from "./entities/checklist.entity";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 import { CheckListItemFormattedList } from "./dtos/check_list_item.dto";
@@ -40,7 +40,7 @@ export class ChecklistsController {
    */
 
   @Get()
-  @ApiCreatedResponse({
+  @ApiOkResponse({
     type: [CheckListItemFormattedList],
   })
   findPaginatedByParams(
@@ -49,6 +49,7 @@ export class ChecklistsController {
     return this.service.findPaginatedByParams({
       ...dto,
       byCompany: dto.byCompany && Number(dto.byCompany),
+      hasAnomaly: dto.hasAnomaly && Boolean(dto.hasAnomaly),
     });
   }
 }

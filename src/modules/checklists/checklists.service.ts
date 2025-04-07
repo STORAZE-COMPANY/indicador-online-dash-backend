@@ -74,7 +74,8 @@ export class ChecklistsService {
 
   async findPaginatedByParams({
     byCompany,
-
+    endDate,
+    startDate,
     limit,
     page,
   }: FindParamsDto): Promise<CheckListItemFormattedList[]> {
@@ -83,7 +84,7 @@ export class ChecklistsService {
     const checkListItemList: CheckListItemFormattedList[] =
       await buildCheckListItemQueryWithJoins(
         db<CheckListItem>(CheckListItemFieldsProperties.tableName),
-        { byCompany },
+        { byCompany, startDate, endDate },
         Number(limit),
         offset,
       ).select([

@@ -238,11 +238,18 @@ export function buildCheckListItemQueryWithJoins(
       `${CheckListFieldsProperties.tableName}.id`,
       `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
     )
+
     .where((builder) => {
       if (params.byCompany) {
         builder.where(
           `${CompaniesFieldsProperties.tableName}.id`,
           params.byCompany,
+        );
+      }
+      if (params.startDate && params.endDate) {
+        builder.whereBetween(
+          `${CheckListItemFieldsProperties.tableName}.created_at`,
+          [params.startDate, params.endDate],
         );
       }
     })
@@ -265,6 +272,7 @@ export function buildCheckListItemQueryWithJoins(
 export function buildQuestionsRelatedQueryWithJoins(
   base: Knex.QueryBuilder,
   checkListItemIds: string[],
+  hasAnomalies?: boolean,
 ): Knex.QueryBuilder {
   return base
     .leftJoin(
@@ -276,5 +284,11 @@ export function buildQuestionsRelatedQueryWithJoins(
       builder
         .whereIn("checkListItem_id", checkListItemIds)
         .andWhere("type", QuestionType.MULTIPLE_CHOICE);
+      if (hasAnomalies) {
+        builder.where(
+          `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.anomaly}`,
+          hasAnomalies,
+        );
+      }
     });
 }

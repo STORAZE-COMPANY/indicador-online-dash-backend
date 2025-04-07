@@ -1,29 +1,41 @@
-import { IsString, IsOptional, IsBoolean } from "class-validator";
+import { IsString, IsOptional, Validate } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { BasePaginatedParams } from "@shared/enums";
 import { FindParamsEnum } from "../enums/find.enum";
+import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
+import { IsStartBeforeEndConstraint } from "@shared/validations/annotationsValidations/classValidators/dateInitEnd";
 
-export class FindParamsDto {
-  @ApiPropertyOptional({ description: BasePaginatedParams.byPeriod })
-  @IsString()
-  @IsOptional()
-  byPeriod: string;
+class Period {
+  @ApiPropertyOptional({
+    description: BasePaginatedParams.startDate,
+  })
+  @IsNonBlankString()
+  startDate: string;
+  @ApiPropertyOptional({
+    description: BasePaginatedParams.endDate,
+  })
+  @IsNonBlankString()
+  endDate: string;
 
+  @Validate(IsStartBeforeEndConstraint)
+  validateDates: boolean; // esse campo é apenas para acionar o validador de classe
+}
+
+export class FindParamsDto extends Period {
   @ApiPropertyOptional({ description: FindParamsEnum.byCompany })
   @IsString()
   @IsOptional()
   byCompany: number;
 
   @ApiPropertyOptional({ description: FindParamsEnum.hasAnomaly })
-  @IsBoolean()
   @IsOptional()
   hasAnomaly: boolean;
 
   @ApiProperty({ description: BasePaginatedParams.limit })
-  @IsString()
+  @IsNonBlankString()
   limit: string;
 
   @ApiProperty({ description: BasePaginatedParams.page })
-  @IsString()
+  @IsNonBlankString()
   page: string;
 }
