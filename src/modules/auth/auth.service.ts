@@ -60,7 +60,7 @@ export class AuthService {
     };
   }
   async loginOnMobile(email: string, password: string): Promise<AuthResponse> {
-    const user = await this.findAuthByEmailAndRole(email, true);
+    const user = await this.findAuthEmployeeByEmailAndRole(email, true);
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch)
@@ -169,6 +169,29 @@ export class AuthService {
         .first()
         .select(generateSelect("companies"));
     }
+
+    if (!userAuth)
+      throw new NotFoundException(AuthResponseMessages.userNotFound);
+
+    return userAuth;
+  }
+  async findAuthEmployeeByEmailAndRole(
+    email: string,
+    isLoginOnMobile?: boolean,
+  ): Promise<UserAuth & { password: string }> {
+    let userAuth: (UserAuth & { password: string }) | null = null;
+
+    userAuth = await db<Employee>("employees")
+      .join("roles", "employees.role_id", "roles.id")
+      .where(
+        generateWhereBuilder({
+          email,
+          entityName: "employees",
+          isLoginOnMobile,
+        }),
+      )
+      .first()
+      .select(generateSelect("employees"));
 
     if (!userAuth)
       throw new NotFoundException(AuthResponseMessages.userNotFound);
