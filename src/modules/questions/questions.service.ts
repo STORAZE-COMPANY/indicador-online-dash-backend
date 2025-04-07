@@ -48,4 +48,22 @@ export class QuestionsService {
     );
     return questionsWithChoices;
   }
+  async findAll(): Promise<QuestionsWithChoices[]> {
+    const questions = await db<Question>(QuestionFieldsProperties.tableName);
+
+    const questionsWithChoices = await Promise.all(
+      questions.map(async (question) => {
+        if (question.type === QuestionType.MULTIPLE_CHOICE) {
+          const choices = await db<choices>(
+            ChoicesFieldsProperties.tableName,
+          ).where({
+            question_id: question.id,
+          });
+          return { ...question, choices };
+        }
+        return question;
+      }),
+    );
+    return questionsWithChoices;
+  }
 }

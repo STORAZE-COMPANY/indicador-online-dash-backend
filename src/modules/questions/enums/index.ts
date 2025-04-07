@@ -25,6 +25,8 @@ enum ChoicesFieldsProperties {
 
 enum QuestionsRoutes {
   baseUrl = "questions",
+
+  findAll = "findAll",
 }
 
 enum QuestionsSwaggerInfo {

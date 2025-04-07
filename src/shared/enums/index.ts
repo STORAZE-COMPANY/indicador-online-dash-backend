@@ -53,3 +53,8 @@ export enum Role {
 
   user = "user",
 }
+
+export enum Anomalies {
+  anomaly = "ANOMALIA",
+  anomaly_restricted = "ANOMALIA_RESTRITIVA",
+}

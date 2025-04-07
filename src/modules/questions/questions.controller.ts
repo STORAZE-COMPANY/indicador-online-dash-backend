@@ -41,4 +41,16 @@ export class QuestionsController {
       page: Number(page),
     });
   }
+  @Get(QuestionsRoutes.findAll)
+  @ApiOkResponse({
+    type: QuestionsWithChoices,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiUnauthorizedResponse({
+    description: BaseMessages.unAuthorizedUser,
+    type: UnauthorizedException,
+  })
+  findAll(): Promise<QuestionsWithChoices[]> {
+    return this.service.findAll();
+  }
 }
