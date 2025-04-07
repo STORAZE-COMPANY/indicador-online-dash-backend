@@ -1,9 +1,11 @@
-import { Controller, Post, Body, UseGuards } from "@nestjs/common";
+import { Controller, Post, Body, UseGuards, Query, Get } from "@nestjs/common";
 import { ChecklistsService } from "./checklists.service";
 import { CreateCheckListDto } from "./dtos/create-checklist.dto";
 import { ApiCreatedResponse, ApiTags } from "@nestjs/swagger";
 import { CheckList } from "./entities/checklist.entity";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
+import { CheckListItemFormattedList } from "./dtos/check_list_item.dto";
+import { FindParamsDto } from "./dtos/find-params.dto";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -29,5 +31,24 @@ export class ChecklistsController {
   @UseGuards(JwtAuthGuard)
   create(@Body() dto: CreateCheckListDto) {
     return this.service.create(dto);
+  }
+
+  /**
+   * Encontra checklists paginados com base nos parâmetros fornecidos.
+   * @param dto Parâmetros de busca para os checklists.
+   * @returns Lista de checklists formatados.
+   */
+
+  @Get()
+  @ApiCreatedResponse({
+    type: [CheckListItemFormattedList],
+  })
+  findPaginatedByParams(
+    @Query() dto: FindParamsDto,
+  ): Promise<CheckListItemFormattedList[]> {
+    return this.service.findPaginatedByParams({
+      ...dto,
+      byCompany: dto.byCompany && Number(dto.byCompany),
+    });
   }
 }
