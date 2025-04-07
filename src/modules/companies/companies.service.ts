@@ -31,8 +31,7 @@ export class CompaniesService {
       throw new ConflictException(CompaniesResponseMessages.cnpjAlreadyExists);
 
     const harshPassword = await bcrypt.hash(
-      //this.generateRandomCode().toString(),
-      "senha123",
+      this.generateRandomCode().toString(),
       8,
     );
 
@@ -44,7 +43,6 @@ export class CompaniesService {
         isActive: dto.isActive,
         password: harshPassword,
         email: dto.email,
-        checklistIds: db.raw("?::jsonb", [JSON.stringify(dto.checklistIds)]),
       })
       .returning("*");
     {
@@ -69,7 +67,6 @@ export class CompaniesService {
         name: dto.name,
         cnpj: dto.cnpj,
         isActive: dto.isActive,
-        checklistIds: db.raw("?::jsonb", [JSON.stringify(dto.checklistIds)]),
         updated_at: db.fn.now(),
       })
       .returning("*");

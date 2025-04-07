@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsNotEmpty,
   IsString,
   Matches,
@@ -13,6 +14,7 @@ import { notBlankRegex } from "@shared/validations/annotationsValidations";
 import { Type } from "class-transformer";
 import { CheckListQuestionsDto } from "./question.dto";
 import { CheckListItemFieldsProperties } from "../enums/checkListItem.enum";
+import { CheckListItem } from "../entities/checkListItem.entity";
 export class CreateCheckListItemDto {
   @ApiProperty({
     description: CheckListItemFieldsProperties.categories_id,
@@ -30,4 +32,29 @@ export class CreateCheckListItemDto {
   @ValidateNested({ each: true })
   @Type(() => CheckListQuestionsDto)
   question_list: CheckListQuestionsDto[];
+}
+
+export class CheckListItemFormattedList extends CheckListItem {
+  @ApiProperty({
+    description: "Nome do checklist",
+  })
+  @IsString()
+  checklistName: string;
+
+  @ApiProperty({
+    description: "Nome da empresa vinculada ao checklist",
+  })
+  @IsString()
+  companyName: string;
+
+  @ApiProperty({
+    description: "ID da empresa vinculada ao checklist",
+  })
+  companyId: string;
+
+  @ApiProperty({
+    description: "Se o checklist tem anomalias",
+  })
+  @IsBoolean()
+  hasAnomalies: boolean;
 }

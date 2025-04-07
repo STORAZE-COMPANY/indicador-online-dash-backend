@@ -8,12 +8,25 @@ import { BaseMessages } from "@shared/enums";
 import { CheckListFieldsProperties } from "./enums/checkList.enum";
 
 import {
+  buildCheckListItemQueryWithJoins,
+  buildQuestionsRelatedQueryWithJoins,
   handleBuildChoicesToInsert,
   handleBuildQuestionsToInsert,
   handleCreateCheckListItem,
   handleCreateMultipleChoice,
   handleCreateQuestion,
 } from "./auxliar/auxiliar.func";
+import { FindParamsDto } from "@modules/checklists/dtos/find-params.dto";
+import { CheckListItem } from "./entities/checkListItem.entity";
+import { CheckListItemFieldsProperties } from "./enums/checkListItem.enum";
+import { CompaniesFieldsProperties } from "@modules/companies/enums";
+import { CheckListItemFormattedList } from "./dtos/check_list_item.dto";
+import {
+  ChoicesFieldsProperties,
+  QuestionFieldsProperties,
+} from "@modules/questions/enums";
+import { Question } from "@modules/questions/entities/question.entity";
+import { Anomalies } from "./enums/anomaly.enum";
 
 @Injectable()
 export class ChecklistsService {
@@ -59,13 +72,51 @@ export class ChecklistsService {
     });
   }
 
-  async findAll(): Promise<Checklist[]> {
-    const data = await db<Checklist>("checklists").select("*");
+  async findPaginatedByParams({
+    byCompany,
+    endDate,
+    startDate,
+    limit,
+    page,
+  }: FindParamsDto): Promise<CheckListItemFormattedList[]> {
+    const offset = (Number(page) - 1) * Number(limit);
 
-    return data.map((item) => ({
-      ...item,
-      categories: item.categories,
-    }));
+    const checkListItemList: CheckListItemFormattedList[] =
+      await buildCheckListItemQueryWithJoins(
+        db<CheckListItem>(CheckListItemFieldsProperties.tableName),
+        { byCompany, startDate, endDate },
+        Number(limit),
+        offset,
+      ).select([
+        `${CheckListItemFieldsProperties.tableName}.*`,
+        `${CompaniesFieldsProperties.tableName}.name as companyName`,
+        `${CompaniesFieldsProperties.tableName}.id as companyId`,
+        `${CheckListFieldsProperties.tableName}.name as checklistName`,
+      ]);
+
+    const questionsRelated: (Question & { anomaly: Anomalies | null })[] =
+      await buildQuestionsRelatedQueryWithJoins(
+        db<Question>(QuestionFieldsProperties.tableName),
+        checkListItemList.map((item) => item.id),
+      ).select([
+        `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
+        `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.anomaly}`,
+      ]);
+
+    const checkListItemWithQuestions = checkListItemList.map((item) => {
+      const questions = questionsRelated.filter(
+        (question) => question.checkListItem_id === item.id,
+      );
+
+      return {
+        ...item,
+        hasAnomalies: questions.some((question) => ({
+          anomaly: question.anomaly !== null ? true : false,
+        })),
+      };
+    });
+
+    return checkListItemWithQuestions;
   }
 
   async findOne(id: number): Promise<Checklist> {

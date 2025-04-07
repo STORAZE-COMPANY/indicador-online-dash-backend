@@ -16,6 +16,14 @@ import { checkListMessages } from "../enums/messages.enum";
 import { InternalServerErrorException } from "@nestjs/common";
 import { CheckListItemFieldsProperties } from "../enums/checkListItem.enum";
 import { Anomalies } from "../enums/anomaly.enum";
+import { CompaniesFieldsProperties } from "@modules/companies/enums";
+import { CheckListFieldsProperties } from "../enums/checkList.enum";
+import {
+  ChoicesFieldsProperties,
+  QuestionFieldsProperties,
+} from "@modules/questions/enums";
+import { Question } from "@modules/questions/entities/question.entity";
+import { FindParamsDto } from "../dtos/find-params.dto";
 
 /**
  * Cria um item de checklist no banco de dados utilizando uma transação.
@@ -184,4 +192,103 @@ export function handleBuildChoicesToInsert(
       })),
     )
     .flat();
+}
+
+/**
+ * Constrói uma consulta SQL para buscar itens de checklist com junções e filtros opcionais.
+ *
+ * @param base - O construtor de consulta do Knex que serve como base para a query.
+ * @param params - Parâmetros opcionais para filtrar os resultados da consulta.
+ *   - `byCompany` (opcional): Filtra os itens de checklist associados a uma empresa específica.
+ * @param limit - O número máximo de registros a serem retornados.
+ * @param offset - O deslocamento para paginação dos resultados.
+ *
+ * @returns Uma consulta Knex configurada com junções, filtros e paginação.
+ *
+ * ### Detalhes das junções:
+ * - Realiza uma junção à esquerda (`leftJoin`) entre a tabela de propriedades de campos de empresas
+ *   (`CompaniesFieldsProperties`) e a tabela de itens de checklist (`CheckListItemFieldsProperties`),
+ *   utilizando a relação entre `checkListItem_Id` na tabela de empresas e o campo `id` na tabela de itens de checklist.
+ * - Realiza uma junção interna (`join`) entre a tabela de checklists (`CheckListFieldsProperties`) e a tabela de itens
+ *   de checklist (`CheckListItemFieldsProperties`), utilizando a relação entre o campo `id` na tabela de checklists
+ *   e o campo `checkList_id` na tabela de itens de checklist.
+ *
+ * ### Detalhes do filtro:
+ * - Caso o parâmetro `byCompany` seja fornecido, aplica um filtro na consulta para retornar apenas os itens de checklist
+ *   associados à empresa cujo `id` corresponde ao valor de `byCompany`.
+ *
+ * ### Paginação:
+ * - Limita o número de registros retornados com base no valor de `limit`.
+ * - Define o deslocamento inicial dos registros retornados com base no valor de `offset`.
+ */
+export function buildCheckListItemQueryWithJoins(
+  base: Knex.QueryBuilder,
+  params: Partial<FindParamsDto>,
+  limit: number,
+  offset: number,
+) {
+  return base
+    .leftJoin(
+      CompaniesFieldsProperties.tableName,
+      `${CompaniesFieldsProperties.tableName}.checkListItem_Id`,
+      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.id}`,
+    )
+    .join(
+      CheckListFieldsProperties.tableName,
+      `${CheckListFieldsProperties.tableName}.id`,
+      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
+    )
+
+    .where((builder) => {
+      if (params.byCompany) {
+        builder.where(
+          `${CompaniesFieldsProperties.tableName}.id`,
+          params.byCompany,
+        );
+      }
+      if (params.startDate && params.endDate) {
+        builder.whereBetween(
+          `${CheckListItemFieldsProperties.tableName}.created_at`,
+          [params.startDate, params.endDate],
+        );
+      }
+    })
+    .limit(limit)
+    .offset(offset);
+}
+
+/**
+ * Constrói uma consulta SQL com junções relacionadas a perguntas e aplica filtros específicos.
+ *
+ * @param base - Um objeto `Knex.QueryBuilder` que serve como base para a construção da consulta.
+ * @param checkListItemIds - Um array de strings contendo os IDs dos itens de checklist que serão usados como filtro.
+ * @returns Um objeto `Knex.QueryBuilder` representando a consulta SQL construída com as junções e filtros aplicados.
+ *
+ * A consulta realiza uma junção à esquerda entre a tabela de propriedades de escolhas (`ChoicesFieldsProperties`)
+ * e a tabela de propriedades de perguntas (`QuestionFieldsProperties`), utilizando o campo `question_id` como chave.
+ * Em seguida, aplica um filtro para selecionar apenas as perguntas que pertencem aos itens de checklist especificados
+ * e que possuem o tipo `MULTIPLE_CHOICE`.
+ */
+export function buildQuestionsRelatedQueryWithJoins(
+  base: Knex.QueryBuilder,
+  checkListItemIds: string[],
+  hasAnomalies?: boolean,
+): Knex.QueryBuilder {
+  return base
+    .leftJoin(
+      ChoicesFieldsProperties.tableName,
+      `${ChoicesFieldsProperties.tableName}.question_id`,
+      `${QuestionFieldsProperties.tableName}.id`,
+    )
+    .where((builder: Knex.QueryBuilder<Question>) => {
+      builder
+        .whereIn("checkListItem_id", checkListItemIds)
+        .andWhere("type", QuestionType.MULTIPLE_CHOICE);
+      if (hasAnomalies) {
+        builder.where(
+          `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.anomaly}`,
+          hasAnomalies,
+        );
+      }
+    });
 }

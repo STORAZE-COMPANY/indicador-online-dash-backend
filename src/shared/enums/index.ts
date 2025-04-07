@@ -40,6 +40,11 @@ export enum BasePaginatedParams {
   limit = "Limite de registros por página",
   page = "Página de registros",
   query = "Query de busca",
+
+  byPeriod = "Período de busca, com data inicial e final no formate ISO 8601",
+
+  startDate = "Data inicial",
+  endDate = "Data final",
 }
 
 export enum Role {
