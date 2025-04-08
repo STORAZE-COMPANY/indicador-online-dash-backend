@@ -1,5 +1,5 @@
-import { QuestionType } from "@modules/checklists/enums/question-type.enum";
 import { QuestionAnswerType } from "@shared/enums";
+import { QuestionType } from "../enums";
 
 export class Question {
   id: string;

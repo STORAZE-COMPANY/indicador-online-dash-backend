@@ -341,8 +341,8 @@ export function buildCheckListWithEmployeeRelatedQueryWithJoins(
 
     .join(
       EmployeesFields.tableName,
-      `${EmployeesFields.tableName}.${EmployeesFields.questionId}`,
-      `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
+      `${EmployeesFields.tableName}.${EmployeesFields.id}`,
+      `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.employee_id}`,
     )
 
     .leftJoin(

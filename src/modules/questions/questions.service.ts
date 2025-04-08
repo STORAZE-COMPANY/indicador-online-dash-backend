@@ -37,7 +37,7 @@ export class QuestionsService {
 
     const questionsWithChoices = await Promise.all(
       questions.map(async (question) => {
-        if (question.type === QuestionType.MULTIPLE_CHOICE) {
+        if (question.type === (QuestionType.MULTIPLE_CHOICE as QuestionType)) {
           const choices = await db<choices>(
             ChoicesFieldsProperties.tableName,
           ).where({
@@ -55,7 +55,7 @@ export class QuestionsService {
 
     const questionsWithChoices = await Promise.all(
       questions.map(async (question) => {
-        if (question.type === QuestionType.MULTIPLE_CHOICE) {
+        if (question.type === (QuestionType.MULTIPLE_CHOICE as QuestionType)) {
           const choices = await db<choices>(
             ChoicesFieldsProperties.tableName,
           ).where({
@@ -80,6 +80,7 @@ export class QuestionsService {
         isRequired: question.isRequired,
         answerType: question.answerType,
         IAPrompt: question.IAPrompt,
+        employee_id: question.employee_id,
       })
       .returning("*");
 
