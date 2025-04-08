@@ -15,9 +15,10 @@ import {
   ApiOkResponse,
 } from "@nestjs/swagger";
 import { BaseMessages } from "@shared/enums";
-import { CreateEmployeeResponse, Employee } from "./entities/employee.entity";
+import { CreateEmployeeResponse } from "./entities/employee.entity";
 import { FindParamsDto } from "./dtos/find-params.dto";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
+import { EmployeeListDto } from "./dtos/list-employee.dto";
 
 @Controller("employees")
 export class EmployeesController {
@@ -38,7 +39,7 @@ export class EmployeesController {
 
   @Get()
   @ApiOkResponse({
-    type: Employee,
+    type: [EmployeeListDto],
   })
   @UseGuards(JwtAuthGuard)
   findList(@Query() { query, limit, page }: FindParamsDto) {

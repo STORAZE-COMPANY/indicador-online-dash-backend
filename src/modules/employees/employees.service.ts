@@ -12,6 +12,7 @@ import { EmployeesResponseMessages } from "./enums";
 import { BaseMessages } from "@shared/enums";
 import { BasePaginationParams } from "./interfaces";
 import { Knex } from "knex";
+import { EmployeeListDto } from "./dtos/list-employee.dto";
 // import { sendEmail } from "./smtp";
 
 @Injectable()
@@ -30,13 +31,24 @@ export class EmployeesService {
     query,
     limit,
     page,
-  }: BasePaginationParams): Promise<Employee[]> {
+  }: BasePaginationParams): Promise<EmployeeListDto[]> {
     const offset = (page - 1) * limit;
     return await db<Employee>("employees")
+      .join("roles", "employees.role_id", "roles.id")
+      .join("companies", "employees.company_id", "companies.id")
       .where(this.generateWhereBuilder(query))
       .limit(limit)
       .offset(offset)
-      .orderBy("name");
+      .orderBy("name")
+      .select(
+        "employees.id",
+        "employees.name",
+        "employees.email",
+        "employees.phone",
+        "employees.company_id",
+        "roles.name as role_name",
+        "companies.name as company_name",
+      );
   }
 
   async create({
