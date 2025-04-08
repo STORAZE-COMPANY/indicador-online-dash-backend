@@ -232,8 +232,8 @@ export function buildCheckListItemQueryWithJoins(
   return base
     .leftJoin(
       CompaniesFieldsProperties.tableName,
-      `${CompaniesFieldsProperties.tableName}.checkListItem_Id`,
-      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.id}`,
+      `${CompaniesFieldsProperties.tableName}.id`,
+      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.company_id}`,
     )
     .join(
       CheckListFieldsProperties.tableName,
@@ -244,7 +244,7 @@ export function buildCheckListItemQueryWithJoins(
     .where((builder) => {
       if (params.byCompany) {
         builder.where(
-          `${CompaniesFieldsProperties.tableName}.id`,
+          `${CheckListItemFieldsProperties.company_id}`,
           params.byCompany,
         );
       }

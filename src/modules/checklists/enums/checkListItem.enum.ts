@@ -7,4 +7,5 @@ export enum CheckListItemFieldsProperties {
 
   created_at = "created_at",
   updated_at = "updated_at",
+  company_id = "company_id",
 }

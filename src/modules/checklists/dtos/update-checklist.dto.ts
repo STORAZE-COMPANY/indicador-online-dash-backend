@@ -10,6 +10,9 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Optional } from "@nestjs/common";
 import { Type } from "class-transformer";
 import { QuestionType } from "../enums/question-type.enum";
+import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
+import { CheckListItemFieldsProperties } from "../enums/checkListItem.enum";
+import { CheckListFieldsProperties } from "../enums/checkList.enum";
 
 class QuestionDto {
   @IsString()
@@ -84,4 +87,33 @@ export class UpdateChecklistDto {
   })
   @Optional()
   categories: CategoryDto[];
+}
+
+export class UpdateCompanyRelated {
+  @IsNumber()
+  @ApiProperty({
+    example: 1,
+    description: "ID da empresa",
+  })
+  companyId: number;
+
+  @IsNonBlankString({ isOptional: false })
+  @ApiProperty({
+    description: CheckListItemFieldsProperties.id,
+  })
+  checkListItemId: string;
+}
+export class updateExpiriesTime {
+  @ApiProperty({
+    example: 1,
+    description: CheckListFieldsProperties.expiries_in,
+  })
+  @IsNonBlankString({ isOptional: false })
+  expiriesTime: string;
+
+  @IsNonBlankString({ isOptional: false })
+  @ApiProperty({
+    description: CheckListItemFieldsProperties.id,
+  })
+  checkListId: string;
 }

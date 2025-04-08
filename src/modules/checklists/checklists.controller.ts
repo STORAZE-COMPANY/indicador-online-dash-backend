@@ -1,7 +1,21 @@
-import { Controller, Post, Body, UseGuards, Query, Get } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Query,
+  Get,
+  Put,
+  NotFoundException,
+} from "@nestjs/common";
 import { ChecklistsService } from "./checklists.service";
 import { CreateCheckListDto } from "./dtos/create-checklist.dto";
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { CheckList } from "./entities/checklist.entity";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 import {
@@ -9,6 +23,11 @@ import {
   CheckListItemFormattedList,
 } from "./dtos/check_list_item.dto";
 import { employeeIdDto, FindParamsDto } from "./dtos/find-params.dto";
+import {
+  UpdateCompanyRelated,
+  updateExpiriesTime,
+} from "./dtos/update-checklist.dto";
+import { CheckListItem } from "./entities/checkListItem.entity";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -70,6 +89,36 @@ export class ChecklistsController {
   ): Promise<CheckListForSpecificEmployee[]> {
     return this.service.findPaginatedByEmployeeResponsible({
       employeeId: dto.employeeId,
+    });
+  }
+
+  @Put("update-company-related")
+  @ApiNotFoundResponse({
+    description: "ChecklistItem não encontrado",
+    type: NotFoundException,
+  })
+  @ApiOkResponse({
+    type: CheckListItem,
+  })
+  updateCompanyId(@Body() dto: UpdateCompanyRelated) {
+    return this.service.updateCompanyRelated({
+      companies_id: dto.companyId,
+      checkListItemId: dto.checkListItemId,
+    });
+  }
+
+  @Put("update-expiries-time")
+  @ApiNotFoundResponse({
+    description: "Checklist não encontrado",
+    type: NotFoundException,
+  })
+  @ApiOkResponse({
+    type: CheckList,
+  })
+  updateExpiriesTime(@Body() dto: updateExpiriesTime) {
+    return this.service.updateExpiriesTime({
+      expiries_in: dto.expiriesTime,
+      checkListId: dto.checkListId,
     });
   }
 }

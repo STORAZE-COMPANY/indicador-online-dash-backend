@@ -31,4 +31,9 @@ export class CheckListItem {
   })
   @IsDate()
   updated_at?: Date;
+
+  @ApiProperty({
+    description: CheckListItemFieldsProperties.company_id,
+  })
+  company_id?: number;
 }

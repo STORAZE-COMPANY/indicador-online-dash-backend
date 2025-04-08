@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { CheckList } from "./entities/checklist.entity";
 import { CreateCheckListDto } from "./dtos/create-checklist.dto";
 import db from "database/connection";
@@ -31,7 +31,7 @@ import {
   QuestionFieldsProperties,
 } from "@modules/questions/enums";
 import { Question } from "@modules/questions/entities/question.entity";
-import { Anomalies } from "@shared/enums";
+import { Anomalies, BaseMessages } from "@shared/enums";
 
 @Injectable()
 export class ChecklistsService {
@@ -137,5 +137,53 @@ export class ChecklistsService {
       ]);
 
     return checkListItemList;
+  }
+  async updateExpiriesTime({
+    expiries_in,
+    checkListId,
+  }: {
+    checkListId: string;
+    expiries_in: string;
+  }): Promise<CheckList> {
+    const checkList = await db<CheckList>(CheckListFieldsProperties.tableName)
+      .where({ id: checkListId })
+      .first();
+    if (!checkList) throw new NotFoundException(BaseMessages.notFound);
+    const [updated] = await db<CheckList>(CheckListFieldsProperties.tableName)
+      .update({
+        expiries_in: new Date(expiries_in),
+      })
+      .where({
+        id: checkListId,
+      })
+      .returning("*");
+
+    return updated;
+  }
+  async updateCompanyRelated({
+    companies_id,
+    checkListItemId,
+  }: {
+    checkListItemId: string;
+    companies_id: number;
+  }): Promise<CheckListItem> {
+    const checkListItem = await db<CheckListItem>(
+      CheckListItemFieldsProperties.tableName,
+    )
+      .where({ id: checkListItemId })
+      .first();
+    if (!checkListItem) throw new NotFoundException(BaseMessages.notFound);
+    const [updated] = await db<CheckListItem>(
+      CheckListItemFieldsProperties.tableName,
+    )
+      .update({
+        company_id: companies_id,
+      })
+      .where({
+        id: checkListItemId,
+      })
+      .returning("*");
+
+    return updated;
   }
 }
