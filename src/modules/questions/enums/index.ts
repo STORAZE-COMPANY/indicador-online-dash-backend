@@ -19,7 +19,7 @@ enum ChoicesFieldsProperties {
   id = "id",
   choice = "choice",
   question_id = "question_id",
-  anomaly = "anomaly",
+  anomaly = "anomalyStatus",
   createdAt = "created_at",
 }
 

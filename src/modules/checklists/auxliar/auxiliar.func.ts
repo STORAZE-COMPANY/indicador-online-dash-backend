@@ -15,7 +15,7 @@ import { QuestionsFormatted } from "../interfaces/questions.interface";
 import { checkListMessages } from "../enums/messages.enum";
 import { InternalServerErrorException } from "@nestjs/common";
 import { CheckListItemFieldsProperties } from "../enums/checkListItem.enum";
-import { Anomalies } from "../enums/anomaly.enum";
+import { Anomalies } from "@shared/enums";
 import { CompaniesFieldsProperties } from "@modules/companies/enums";
 import { CheckListFieldsProperties } from "../enums/checkList.enum";
 import {
@@ -43,7 +43,7 @@ export async function handleCreateCheckListItem(
     CheckListItemFieldsProperties.tableName,
   )
     .insert(checkListItem)
-    .returning(["id", "categories_id", "checkList_id"]);
+    .returning("*");
 
   if (!created)
     throw new InternalServerErrorException(
@@ -102,7 +102,7 @@ export async function handleCreateQuestion(
 export async function handleCreateMultipleChoice(
   multipleChoice: {
     choice: string;
-    anomaly?: Anomalies | null;
+    anomalyStatus?: Anomalies | null;
     question_id: string;
   }[],
   trx: Knex.Transaction,
@@ -189,7 +189,7 @@ export function handleBuildChoicesToInsert(
     .map((item) =>
       (item.multiple_choice || []).map((choice) => ({
         choice: choice.choice,
-        anomaly: choice.anomaly,
+        anomalyStatus: choice.anomalyStatus,
         question_id: item.id,
       })),
     )

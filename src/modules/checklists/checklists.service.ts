@@ -31,7 +31,7 @@ import {
   QuestionFieldsProperties,
 } from "@modules/questions/enums";
 import { Question } from "@modules/questions/entities/question.entity";
-import { Anomalies } from "./enums/anomaly.enum";
+import { Anomalies } from "@shared/enums";
 
 @Injectable()
 export class ChecklistsService {
