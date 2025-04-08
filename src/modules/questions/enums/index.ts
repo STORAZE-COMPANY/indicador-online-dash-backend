@@ -12,6 +12,12 @@ enum QuestionFieldsProperties {
   isRequired = "isRequired",
   checkList_id = "checkListItem_id",
   IAPrompt = "IAPrompt",
+
+  employee_id = "employee_id",
+
+  answerType = "answerType",
+
+  choices = "Caso tenha múltipla escolha, as opções de resposta",
 }
 
 enum ChoicesFieldsProperties {

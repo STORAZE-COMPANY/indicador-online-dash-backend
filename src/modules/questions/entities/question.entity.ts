@@ -1,4 +1,5 @@
 import { QuestionType } from "@modules/checklists/enums/question-type.enum";
+import { QuestionAnswerType } from "@shared/enums";
 
 export class Question {
   id: string;
@@ -13,5 +14,7 @@ export class Question {
 
   IAPrompt: string | null;
 
-  employee_id: string | null;
+  employee_id: number | null;
+
+  answerType: QuestionAnswerType;
 }

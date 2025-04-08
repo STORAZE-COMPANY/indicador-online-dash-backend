@@ -13,7 +13,7 @@ export class choices {
   @ApiProperty({
     enum: Anomalies,
   })
-  anomaly: Anomalies;
+  anomalyStatus: Anomalies;
 
   @ApiProperty({
     type: Date,

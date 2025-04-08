@@ -14,6 +14,7 @@ import { getChatResponse } from "api/openIa";
 import { QuestionFieldsProperties } from "@modules/questions/enums";
 import { Anomalies, BaseMessages } from "@shared/enums";
 import { Question } from "@modules/questions/entities/question.entity";
+import { OpenIA } from "api/openIa/enum";
 
 @Injectable()
 export class AnswersService {
@@ -49,15 +50,33 @@ export class AnswersService {
     if (!questionExist.IAPrompt || !textAnswer)
       throw new UnprocessableEntityException(BaseMessages.requiredFields);
 
-    const iaAnswer = await getChatResponse({
-      prompt: questionExist.IAPrompt,
-      userResponseContentType: [
+    const iaAnswer = await getChatResponse<Anomalies | BaseMessages.noAnomaly>({
+      inputDataToSend: [
         {
-          type: "input_text",
-          text: textAnswer,
+          role: OpenIA.ia_system,
+          content: questionExist.IAPrompt,
+        },
+        {
+          role: OpenIA.user,
+          content: [
+            {
+              type: "input_text",
+              text: textAnswer,
+            },
+          ],
         },
       ],
     });
+
+    if (
+      iaAnswer !== Anomalies.anomaly &&
+      iaAnswer !== Anomalies.anomaly_restricted &&
+      iaAnswer !== BaseMessages.noAnomaly
+    )
+      throw new UnprocessableEntityException(
+        BaseMessages.iaResponseNotExpected,
+        iaAnswer,
+      );
 
     const [answer] = await db<Answers>(AnswerFieldsProperties.tableName)
       .insert({
@@ -65,7 +84,8 @@ export class AnswersService {
         question_id,
         imageAnswer,
         textAnswer,
-        anomalyStatus: iaAnswer as Anomalies,
+        anomalyStatus:
+          iaAnswer !== BaseMessages.noAnomaly ? iaAnswer : undefined,
       })
       .returning("*");
     return answer;
