@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { ResponseInputMessageContentList } from "openai/resources/responses/responses";
 import { OpenIA } from "./enum";
 
 export const client = new OpenAI({
@@ -15,25 +14,14 @@ export const client = new OpenAI({
  *
  * @returns {Promise<string>} - Retorna uma promessa que resolve com o texto de saída gerado pelo modelo de IA.
  */
-export async function getChatResponse({
-  prompt,
-  userResponseContentType,
+export async function getChatResponse<T>({
+  inputDataToSend,
 }: {
-  userResponseContentType: ResponseInputMessageContentList;
-  prompt: string;
-}) {
+  inputDataToSend: OpenAI.Responses.ResponseInput;
+}): Promise<T> {
   const response = await client.responses.create({
     model: OpenIA.ia_model,
-    input: [
-      {
-        role: OpenIA.ia_system,
-        content: prompt,
-      },
-      {
-        role: OpenIA.user,
-        content: userResponseContentType,
-      },
-    ],
+    input: inputDataToSend,
   });
-  return response.output_text;
+  return response.output_text.trim().replace(/\.$/, "") as T;
 }
