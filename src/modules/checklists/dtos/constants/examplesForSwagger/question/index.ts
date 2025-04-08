@@ -1,8 +1,8 @@
-import { Anomalies } from "@modules/checklists/enums/anomaly.enum";
 import {
   AnswerType,
   QuestionType,
 } from "@modules/checklists/enums/question-type.enum";
+import { Anomalies } from "@shared/enums";
 
 const questionExample01 = [
   {
@@ -13,7 +13,7 @@ const questionExample01 = [
     multiple_choice: [
       {
         choice: "Sim",
-        anomaly: Anomalies.MEDIUM,
+        anomalyStatus: Anomalies.anomaly,
       },
       {
         choice: "Não",
@@ -42,11 +42,11 @@ const questionExample02 = [
       },
       {
         choice: "Não",
-        anomaly: Anomalies.MEDIUM,
+        anomalyStatus: Anomalies.anomaly_restricted,
       },
       {
         choice: "N/A",
-        anomaly: Anomalies.MEDIUM,
+        anomalyStatus: Anomalies.anomaly_restricted,
       },
     ],
   },

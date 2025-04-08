@@ -14,6 +14,12 @@ export enum BaseMessages {
   unAuthorizedUser = "Usuário não autenticado",
 
   invalidToken = "Token inválido",
+
+  iaResponseNotExpected = "Resposta da IA não esperada",
+
+  noAnomaly = "OK",
+
+  errorOnCreate = "Erro ao criar registro",
 }
 
 export enum smtpMessages {
@@ -52,4 +58,14 @@ export enum Role {
   superAdmin = "superAdmin",
 
   user = "user",
+}
+
+export enum Anomalies {
+  anomaly = "ANOMALIA",
+  anomaly_restricted = "ANOMALIA_RESTRITIVA",
+}
+export enum QuestionAnswerType {
+  TEXT = "Text",
+  IMAGE = "Image",
+  IA = "IA",
 }

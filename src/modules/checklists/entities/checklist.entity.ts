@@ -12,7 +12,7 @@ import {
 } from "class-validator";
 import { Type } from "class-transformer";
 import { CheckListFieldsProperties } from "../enums/checkList.enum";
-import { Anomalies } from "@modules/checklists/enums/anomaly.enum";
+import { Anomalies } from "@shared/enums";
 
 export class Question {
   @ApiProperty({
@@ -158,7 +158,7 @@ export class CheckListMultipleChoice {
   choice: string;
 
   @IsBoolean()
-  anomaly: Anomalies | null;
+  anomalyStatus: Anomalies | null;
 
   @IsString()
   question_id: string;

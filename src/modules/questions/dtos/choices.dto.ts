@@ -1,5 +1,5 @@
-import { Anomalies } from "@modules/checklists/enums/anomaly.enum";
 import { ApiProperty } from "@nestjs/swagger";
+import { Anomalies } from "@shared/enums";
 
 export class choices {
   @ApiProperty({
@@ -13,7 +13,7 @@ export class choices {
   @ApiProperty({
     enum: Anomalies,
   })
-  anomaly: Anomalies;
+  anomalyStatus: Anomalies;
 
   @ApiProperty({
     type: Date,

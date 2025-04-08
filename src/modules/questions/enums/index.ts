@@ -12,6 +12,12 @@ enum QuestionFieldsProperties {
   isRequired = "isRequired",
   checkList_id = "checkListItem_id",
   IAPrompt = "IAPrompt",
+
+  employee_id = "employee_id",
+
+  answerType = "answerType",
+
+  choices = "Caso tenha múltipla escolha, as opções de resposta",
 }
 
 enum ChoicesFieldsProperties {
@@ -19,12 +25,14 @@ enum ChoicesFieldsProperties {
   id = "id",
   choice = "choice",
   question_id = "question_id",
-  anomaly = "anomaly",
+  anomaly = "anomalyStatus",
   createdAt = "created_at",
 }
 
 enum QuestionsRoutes {
   baseUrl = "questions",
+
+  findAll = "findAll",
 }
 
 enum QuestionsSwaggerInfo {
