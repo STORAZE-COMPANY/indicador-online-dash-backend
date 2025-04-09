@@ -1,21 +1,9 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 import { createAnswerDtoProperties } from "../enums";
 import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
 
-export class CreateAnswerDto {
-  @ApiPropertyOptional({
-    description: createAnswerDtoProperties.textAnswer,
-  })
-  @IsNonBlankString({ isOptional: true })
-  textAnswer?: string;
-
-  @ApiPropertyOptional({
-    description: createAnswerDtoProperties.imageAnswer,
-  })
-  @IsNonBlankString({ isOptional: true })
-  imageAnswer?: string;
-
+class AnswerBaseDto {
   @ApiProperty({
     description: createAnswerDtoProperties.question_id,
   })
@@ -27,4 +15,18 @@ export class CreateAnswerDto {
   })
   @IsNonBlankString({ isOptional: false })
   employee_id: string;
+}
+export class CreateAnswerDto extends AnswerBaseDto {
+  @ApiProperty({
+    description: createAnswerDtoProperties.textAnswer,
+  })
+  @IsNonBlankString({ isOptional: false })
+  textAnswer: string;
+}
+export class CreateAnswerForImageQuestionDto extends AnswerBaseDto {
+  @ApiProperty({
+    description: createAnswerDtoProperties.imageAnswer,
+  })
+  @IsNonBlankString({ isOptional: false })
+  imageAnswer: string;
 }

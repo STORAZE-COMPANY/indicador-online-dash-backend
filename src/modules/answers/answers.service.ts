@@ -8,10 +8,16 @@ import db from "database/connection";
 
 import { AnswerFieldsProperties } from "./enums";
 import { Answers } from "./entities/asnwers.entity";
-import { CreateAnswerDto } from "./dtos/create-answer.dto";
+import {
+  CreateAnswerDto,
+  CreateAnswerForImageQuestionDto,
+} from "./dtos/create-answer.dto";
 import { QuestionId } from "./dtos/find-params.dto";
 import { getChatResponse } from "api/openIa";
-import { QuestionFieldsProperties } from "@modules/questions/enums";
+import {
+  QuestionFieldsProperties,
+  QuestionType,
+} from "@modules/questions/enums";
 import { Anomalies, BaseMessages } from "@shared/enums";
 import { Question } from "@modules/questions/entities/question.entity";
 import { OpenIA } from "api/openIa/enum";
@@ -35,10 +41,68 @@ export class AnswersService {
       .limit(limitNumber);
   }
 
-  async createAnswerForSingleQuestion({
+  async createAnswerForImageQuestion({
     employee_id,
     question_id,
     imageAnswer,
+  }: CreateAnswerForImageQuestionDto): Promise<Answers> {
+    const [questionExist] = await db<Question>(
+      QuestionFieldsProperties.tableName,
+    )
+      .where({ id: question_id })
+      .returning("*");
+    if (!questionExist) throw new NotFoundException(BaseMessages.notFound);
+    if (
+      !questionExist.IAPrompt ||
+      questionExist.type !== QuestionType.FILE_UPLOAD
+    )
+      throw new UnprocessableEntityException(BaseMessages.requiredFields);
+
+    const iaAnswer = await getChatResponse<Anomalies | BaseMessages.noAnomaly>({
+      inputDataToSend: [
+        {
+          role: OpenIA.ia_system,
+          content: questionExist.IAPrompt,
+        },
+        {
+          role: OpenIA.user,
+          content: [
+            {
+              type: "input_image",
+              image_url: imageAnswer,
+              detail: "auto",
+            },
+          ],
+        },
+      ],
+    });
+
+    if (
+      iaAnswer !== Anomalies.anomaly &&
+      iaAnswer !== Anomalies.anomaly_restricted &&
+      iaAnswer !== BaseMessages.noAnomaly
+    )
+      throw new UnprocessableEntityException(
+        BaseMessages.iaResponseNotExpected,
+        iaAnswer,
+      );
+
+    const [answer] = await db<Answers>(AnswerFieldsProperties.tableName)
+      .insert({
+        employee_id: Number(employee_id),
+        question_id,
+        imageAnswer,
+        anomalyStatus:
+          iaAnswer !== BaseMessages.noAnomaly ? iaAnswer : undefined,
+      })
+      .returning("*");
+    return answer;
+  }
+
+  async createAnswerForSingleQuestion({
+    employee_id,
+    question_id,
+
     textAnswer,
   }: CreateAnswerDto): Promise<Answers> {
     const [questionExist] = await db<Question>(
@@ -50,6 +114,15 @@ export class AnswersService {
     if (!questionExist.IAPrompt || !textAnswer)
       throw new UnprocessableEntityException(BaseMessages.requiredFields);
 
+    const [alreadyAnswered] = await db<Answers>(
+      AnswerFieldsProperties.tableName,
+    )
+      .where({
+        question_id: question_id,
+      })
+      .returning("*");
+    if (alreadyAnswered)
+      throw new UnprocessableEntityException(BaseMessages.alreadyAnswered);
     const iaAnswer = await getChatResponse<Anomalies | BaseMessages.noAnomaly>({
       inputDataToSend: [
         {
@@ -82,7 +155,7 @@ export class AnswersService {
       .insert({
         employee_id: Number(employee_id),
         question_id,
-        imageAnswer,
+
         textAnswer,
         anomalyStatus:
           iaAnswer !== BaseMessages.noAnomaly ? iaAnswer : undefined,

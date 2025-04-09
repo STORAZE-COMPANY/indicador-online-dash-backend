@@ -20,6 +20,8 @@ export enum BaseMessages {
   noAnomaly = "OK",
 
   errorOnCreate = "Erro ao criar registro",
+
+  alreadyAnswered = "Pergunta já respondida",
 }
 
 export enum smtpMessages {

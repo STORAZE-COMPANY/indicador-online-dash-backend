@@ -1,6 +1,8 @@
 export enum AnswerRoutes {
   baseUrl = "answers",
   getByQuestionId = "answers-question",
+
+  createAnswerForImageQuestion = "answers-image-question",
 }
 
 export enum AnswerSwaggerInfo {

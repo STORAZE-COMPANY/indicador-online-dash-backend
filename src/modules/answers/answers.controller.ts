@@ -5,6 +5,7 @@ import {
   Post,
   Query,
   UnauthorizedException,
+  UnprocessableEntityException,
   UseGuards,
 } from "@nestjs/common";
 import {
@@ -12,6 +13,7 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
@@ -50,6 +52,10 @@ export class AnswersController {
     description: BaseMessages.unAuthorizedUser,
     type: UnauthorizedException,
   })
+  @ApiUnprocessableEntityResponse({
+    description: BaseMessages.requiredFields,
+    type: UnprocessableEntityException,
+  })
   async create(@Body() categoryDto: CreateAnswerDto): Promise<Answers> {
     return this.service.createAnswerForSingleQuestion({ ...categoryDto });
   }
@@ -64,5 +70,23 @@ export class AnswersController {
   })
   async findByQuestionId(@Query() params: QuestionId): Promise<Answers[]> {
     return this.service.findAnswerByQuestionId({ ...params });
+  }
+  @Post(AnswerRoutes.createAnswerForImageQuestion)
+  @UseGuards(JwtAuthGuard)
+  @ApiCreatedResponse({
+    type: Answers,
+  })
+  @ApiUnauthorizedResponse({
+    description: BaseMessages.unAuthorizedUser,
+    type: UnauthorizedException,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: BaseMessages.requiredFields,
+    type: UnprocessableEntityException,
+  })
+  async createForImageQuestion(
+    @Body() categoryDto: CreateAnswerDto,
+  ): Promise<Answers> {
+    return this.service.createAnswerForSingleQuestion({ ...categoryDto });
   }
 }
