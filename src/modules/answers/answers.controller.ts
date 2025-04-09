@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Post,
   Query,
   UnauthorizedException,
@@ -10,6 +11,7 @@ import {
 } from "@nestjs/common";
 import {
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -20,9 +22,9 @@ import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 
 import { BaseMessages } from "@shared/enums";
 import { AnswerRoutes, AnswerSwaggerInfo } from "./enums";
-import { Answers } from "./entities/asnwers.entity";
+import { AnswerChoice, Answers } from "./entities/asnwers.entity";
 import { AnswersService } from "./answers.service";
-import { CreateAnswerDto } from "./dtos/create-answer.dto";
+import { CreateAnswerChoice, CreateAnswerDto } from "./dtos/create-answer.dto";
 import { QuestionId } from "./dtos/find-params.dto";
 
 @Controller(AnswerRoutes.baseUrl)
@@ -56,6 +58,10 @@ export class AnswersController {
     description: BaseMessages.requiredFields,
     type: UnprocessableEntityException,
   })
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+    type: NotFoundException,
+  })
   async create(@Body() categoryDto: CreateAnswerDto): Promise<Answers> {
     return this.service.createAnswerForSingleQuestion({ ...categoryDto });
   }
@@ -67,6 +73,10 @@ export class AnswersController {
   @ApiUnauthorizedResponse({
     description: BaseMessages.unAuthorizedUser,
     type: UnauthorizedException,
+  })
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+    type: NotFoundException,
   })
   async findByQuestionId(@Query() params: QuestionId): Promise<Answers[]> {
     return this.service.findAnswerByQuestionId({ ...params });
@@ -88,5 +98,29 @@ export class AnswersController {
     @Body() categoryDto: CreateAnswerDto,
   ): Promise<Answers> {
     return this.service.createAnswerForSingleQuestion({ ...categoryDto });
+  }
+  @Post(AnswerRoutes.createAnswerForMultipleChoiceQuestion)
+  @UseGuards(JwtAuthGuard)
+  @ApiCreatedResponse({
+    type: AnswerChoice,
+  })
+  @ApiUnauthorizedResponse({
+    description: BaseMessages.unAuthorizedUser,
+    type: UnauthorizedException,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: BaseMessages.requiredFields,
+    type: UnprocessableEntityException,
+  })
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+    type: NotFoundException,
+  })
+  async createForMultipleQuestion(
+    @Body() answerDto: CreateAnswerChoice,
+  ): Promise<AnswerChoice> {
+    return this.service.createAnswerForMultipleChoiceQuestion({
+      ...answerDto,
+    });
   }
 }

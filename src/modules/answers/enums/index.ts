@@ -3,6 +3,8 @@ export enum AnswerRoutes {
   getByQuestionId = "answers-question",
 
   createAnswerForImageQuestion = "answers-image-question",
+
+  createAnswerForMultipleChoiceQuestion = "answers-multiple-choice-question",
 }
 
 export enum AnswerSwaggerInfo {
@@ -19,6 +21,16 @@ export enum AnswerFieldsProperties {
   employee_id = "employee_id",
 
   anomalyStatus = "anomalyStatus",
+}
+
+export enum AnswerChoiceFieldsProperties {
+  tableName = "answerChoice",
+  id = "id",
+  choice_id = "choice_id",
+  employee_id = "employee_id",
+
+  created_at = "created_at",
+  updated_at = "updated_at",
 }
 
 export enum createAnswerDtoProperties {

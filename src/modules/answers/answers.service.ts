@@ -6,21 +6,24 @@ import {
 
 import db from "database/connection";
 
-import { AnswerFieldsProperties } from "./enums";
-import { Answers } from "./entities/asnwers.entity";
+import { AnswerChoiceFieldsProperties, AnswerFieldsProperties } from "./enums";
+import { AnswerChoice, Answers } from "./entities/asnwers.entity";
 import {
+  CreateAnswerChoice,
   CreateAnswerDto,
   CreateAnswerForImageQuestionDto,
 } from "./dtos/create-answer.dto";
 import { QuestionId } from "./dtos/find-params.dto";
 import { getChatResponse } from "api/openIa";
 import {
+  ChoicesFieldsProperties,
   QuestionFieldsProperties,
   QuestionType,
 } from "@modules/questions/enums";
 import { Anomalies, BaseMessages } from "@shared/enums";
 import { Question } from "@modules/questions/entities/question.entity";
 import { OpenIA } from "api/openIa/enum";
+import { choices } from "@modules/questions/dtos/choices.dto";
 
 @Injectable()
 export class AnswersService {
@@ -98,7 +101,36 @@ export class AnswersService {
       .returning("*");
     return answer;
   }
+  async createAnswerForMultipleChoiceQuestion({
+    choice_id,
+    employee_id,
+  }: CreateAnswerChoice): Promise<AnswerChoice> {
+    const [choiceExist] = await db<choices>(ChoicesFieldsProperties.tableName)
+      .where({ id: choice_id })
+      .returning("*");
+    if (!choiceExist) throw new NotFoundException(BaseMessages.notFound);
 
+    const alreadyAnswered = await db<AnswerChoice>(
+      AnswerChoiceFieldsProperties.tableName,
+    )
+      .where({
+        choice_id: choiceExist.id,
+      })
+      .first();
+    if (alreadyAnswered)
+      throw new UnprocessableEntityException(BaseMessages.alreadyAnswered);
+
+    const [answer] = await db<AnswerChoice>(
+      AnswerChoiceFieldsProperties.tableName,
+    )
+      .insert({
+        choice_id: choice_id,
+        employee_id: employee_id,
+      })
+      .returning("*");
+
+    return answer;
+  }
   async createAnswerForSingleQuestion({
     employee_id,
     question_id,
