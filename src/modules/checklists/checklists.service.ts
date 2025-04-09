@@ -91,7 +91,13 @@ export class ChecklistsService {
         Number(limit),
         offset,
       ).select([
-        `${CheckListItemFieldsProperties.tableName}.*`,
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.categories_id}`,
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.company_id}`,
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.created_at}`,
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.updated_at}`,
+
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.id} as checklistItemId`,
         `${CompaniesFieldsProperties.tableName}.name as companyName`,
         `${CompaniesFieldsProperties.tableName}.id as companyId`,
         `${CheckListFieldsProperties.tableName}.name as checklistName`,
@@ -100,7 +106,7 @@ export class ChecklistsService {
     const questionsRelated: (Question & { anomaly: Anomalies | null })[] =
       await buildQuestionsRelatedQueryWithJoins(
         db<Question>(QuestionFieldsProperties.tableName),
-        checkListItemList.map((item) => item.id),
+        checkListItemList.map((item) => item.checklistItemId),
       ).select([
         `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
         `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.anomaly}`,
@@ -108,7 +114,7 @@ export class ChecklistsService {
 
     const checkListItemWithQuestions = checkListItemList.map((item) => {
       const questions = questionsRelated.filter(
-        (question) => question.checkListItem_id === item.id,
+        (question) => question.checkListItem_id === item.checklistItemId,
       );
 
       return {
