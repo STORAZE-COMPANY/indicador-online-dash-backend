@@ -122,6 +122,13 @@ export class CheckList {
 
   @ApiProperty({
     example: "2024-03-27T12:00:00Z",
+    description: CheckListFieldsProperties.image_expiries_in,
+  })
+  @IsDate()
+  images_expiries_in?: Date;
+
+  @ApiProperty({
+    example: "2024-03-27T12:00:00Z",
     description: CheckListFieldsProperties.created_at,
   })
   @IsDate()

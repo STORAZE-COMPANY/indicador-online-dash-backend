@@ -41,8 +41,6 @@ export class ChecklistsService {
         CheckListFieldsProperties.tableName,
       )
         .insert({
-          expiries_in: dto.expiries_in,
-
           name: dto.name,
         })
         .returning("*");
@@ -141,9 +139,11 @@ export class ChecklistsService {
   async updateExpiriesTime({
     expiries_in,
     checkListId,
+    images_expiries_in,
   }: {
     checkListId: string;
     expiries_in: string;
+    images_expiries_in?: string;
   }): Promise<CheckList> {
     const checkList = await db<CheckList>(CheckListFieldsProperties.tableName)
       .where({ id: checkListId })
@@ -152,6 +152,9 @@ export class ChecklistsService {
     const [updated] = await db<CheckList>(CheckListFieldsProperties.tableName)
       .update({
         expiries_in: new Date(expiries_in),
+        ...(images_expiries_in && {
+          images_expiries_in: new Date(images_expiries_in),
+        }),
       })
       .where({
         id: checkListId,

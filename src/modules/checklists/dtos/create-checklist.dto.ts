@@ -24,13 +24,6 @@ export class CreateCheckListDto {
   name: string;
 
   @ApiProperty({
-    example: "2023-10-01T00:00:00.000Z",
-    description: CheckListFieldsProperties.expiries_in,
-  })
-  @IsString()
-  expiries_in: Date;
-
-  @ApiProperty({
     type: [CreateCheckListItemDto],
     description: CheckListFieldsProperties.checkListItem,
     example: checkListItemExample,

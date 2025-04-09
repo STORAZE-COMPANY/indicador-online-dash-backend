@@ -119,6 +119,7 @@ export class ChecklistsController {
     return this.service.updateExpiriesTime({
       expiries_in: dto.expiriesTime,
       checkListId: dto.checkListId,
+      images_expiries_in: dto.imagesExpiriesTime,
     });
   }
 }

@@ -10,4 +10,6 @@ export enum CheckListFieldsProperties {
   updated_at = "Última atualização",
 
   checkListItem = "CheckListItem",
+
+  image_expiries_in = "tempo de expiração das imagens das questões vinculadas ao checklist",
 }

@@ -105,11 +105,18 @@ export class UpdateCompanyRelated {
 }
 export class updateExpiriesTime {
   @ApiProperty({
-    example: 1,
+    example: "2024-03-27T12:00:00Z",
     description: CheckListFieldsProperties.expiries_in,
   })
   @IsNonBlankString({ isOptional: false })
   expiriesTime: string;
+
+  @ApiProperty({
+    example: "2024-03-27T12:00:00Z",
+    description: CheckListFieldsProperties.image_expiries_in,
+  })
+  @IsNonBlankString({ isOptional: true })
+  imagesExpiriesTime?: string;
 
   @IsNonBlankString({ isOptional: false })
   @ApiProperty({
