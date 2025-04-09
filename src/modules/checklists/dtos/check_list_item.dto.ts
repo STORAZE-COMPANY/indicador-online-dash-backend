@@ -15,7 +15,6 @@ import { notBlankRegex } from "@shared/validations/annotationsValidations";
 import { Type } from "class-transformer";
 import { CheckListQuestionsDto } from "./question.dto";
 import { CheckListItemFieldsProperties } from "../enums/checkListItem.enum";
-import { CheckListItem } from "../entities/checkListItem.entity";
 
 export class CreateCheckListItemDto {
   @ApiProperty({
@@ -98,7 +97,7 @@ export class CheckListForSpecificEmployee {
   @ApiProperty({
     description: "ID do checklist",
   })
-  checklistItemId: string;
+  checklistId: string;
 
   @ApiProperty({
     description: "Nome do checklist",
