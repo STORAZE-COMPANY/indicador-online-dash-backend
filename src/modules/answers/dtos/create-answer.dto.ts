@@ -3,6 +3,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { createAnswerDtoProperties } from "../enums";
 import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
 import { IsNumber } from "class-validator";
+import { Answers } from "../entities/asnwers.entity";
 
 export class AnswerBaseDto {
   @ApiProperty({
@@ -41,4 +42,11 @@ export class CreateAnswerChoice {
 export class CreateAnswerForImageQuestionDto extends AnswerBaseDto {
   @ApiProperty({ type: "string", format: "binary" })
   image: Express.Multer.File;
+}
+
+export class AnswerResponse extends Answers {
+  @ApiProperty({
+    description: createAnswerDtoProperties.openIaResponse,
+  })
+  openIaResponse: string;
 }

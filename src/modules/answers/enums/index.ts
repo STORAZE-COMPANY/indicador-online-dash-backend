@@ -33,12 +33,21 @@ export enum AnswerChoiceFieldsProperties {
   updated_at = "updated_at",
 }
 
+export enum IaPromptAnswerFieldsProperties {
+  tableName = "iaPromptAnswers",
+  id = "id",
+  textAnswer = "textAnswer",
+  answer_id = "answer_id",
+}
+
 export enum createAnswerDtoProperties {
   textAnswer = "Resposta da pergunta",
   question_id = "ID da pergunta",
   employee_id = "ID do funcionário",
 
   imageAnswer = "Imagem contendo a resposta",
+
+  openIaResponse = "Resposta da IA",
 
   anomaly = "Anomalia (resposta que gera um alerta) podendo ser: ANOMALIA ou ANOMALIA_RESTRITIVA",
 }

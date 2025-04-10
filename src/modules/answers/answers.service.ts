@@ -6,9 +6,14 @@ import {
 
 import db from "database/connection";
 
-import { AnswerChoiceFieldsProperties, AnswerFieldsProperties } from "./enums";
+import {
+  AnswerChoiceFieldsProperties,
+  AnswerFieldsProperties,
+  IaPromptAnswerFieldsProperties,
+} from "./enums";
 import { AnswerChoice, Answers } from "./entities/asnwers.entity";
 import {
+  AnswerResponse,
   CreateAnswerChoice,
   CreateAnswerDto,
   CreateAnswerForImageQuestionDto,
@@ -26,6 +31,7 @@ import { OpenIA } from "api/openIa/enum";
 import { choices } from "@modules/questions/dtos/choices.dto";
 
 import { uploadImage } from "api/minioClient";
+import { IaPromptAnswer } from "./entities/iaPromptAnswer.entity";
 
 @Injectable()
 export class AnswersService {
@@ -50,7 +56,7 @@ export class AnswersService {
     employee_id,
     question_id,
     image,
-  }: CreateAnswerForImageQuestionDto): Promise<Answers> {
+  }: CreateAnswerForImageQuestionDto): Promise<AnswerResponse> {
     const [questionExist] = await db<Question>(
       QuestionFieldsProperties.tableName,
     )
@@ -84,26 +90,32 @@ export class AnswersService {
       ],
     });
 
-    if (
-      iaAnswer !== Anomalies.anomaly &&
-      iaAnswer !== Anomalies.anomaly_restricted &&
-      iaAnswer !== BaseMessages.noAnomaly
-    )
-      throw new UnprocessableEntityException(
-        BaseMessages.iaResponseNotExpected,
-        iaAnswer,
-      );
-
     const [answer] = await db<Answers>(AnswerFieldsProperties.tableName)
       .insert({
         employee_id: Number(employee_id),
         question_id,
         imageAnswer: imagePath,
+
         anomalyStatus:
-          iaAnswer !== BaseMessages.noAnomaly ? iaAnswer : undefined,
+          iaAnswer === Anomalies.anomaly
+            ? iaAnswer
+            : iaAnswer === Anomalies.anomaly_restricted
+              ? iaAnswer
+              : undefined,
       })
       .returning("*");
-    return answer;
+
+    await db<IaPromptAnswer>(IaPromptAnswerFieldsProperties.tableName)
+      .insert({
+        answer_id: answer.id,
+        textAnswer: iaAnswer,
+      })
+      .returning("*");
+
+    return {
+      ...answer,
+      openIaResponse: iaAnswer,
+    };
   }
   async createAnswerForMultipleChoiceQuestion({
     choice_id,
@@ -140,7 +152,7 @@ export class AnswersService {
     question_id,
 
     textAnswer,
-  }: CreateAnswerDto): Promise<Answers> {
+  }: CreateAnswerDto): Promise<AnswerResponse> {
     const [questionExist] = await db<Question>(
       QuestionFieldsProperties.tableName,
     )
@@ -197,6 +209,16 @@ export class AnswersService {
           iaAnswer !== BaseMessages.noAnomaly ? iaAnswer : undefined,
       })
       .returning("*");
-    return answer;
+
+    await db<IaPromptAnswer>(IaPromptAnswerFieldsProperties.tableName)
+      .insert({
+        answer_id: answer.id,
+        textAnswer: iaAnswer,
+      })
+      .returning("*");
+    return {
+      ...answer,
+      openIaResponse: iaAnswer,
+    };
   }
 }

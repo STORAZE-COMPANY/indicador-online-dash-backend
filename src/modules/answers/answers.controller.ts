@@ -30,6 +30,7 @@ import { AnswerChoice, Answers } from "./entities/asnwers.entity";
 import { AnswersService } from "./answers.service";
 import {
   AnswerBaseDto,
+  AnswerResponse,
   CreateAnswerChoice,
   CreateAnswerDto,
 } from "./dtos/create-answer.dto";
@@ -58,7 +59,7 @@ export class AnswersController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiCreatedResponse({
-    type: Answers,
+    type: AnswerResponse,
   })
   @ApiUnauthorizedResponse({
     description: BaseMessages.unAuthorizedUser,
@@ -94,7 +95,7 @@ export class AnswersController {
   @Post(AnswerRoutes.createAnswerForImageQuestion)
   @UseGuards(JwtAuthGuard)
   @ApiCreatedResponse({
-    type: Answers,
+    type: AnswerResponse,
   })
   @ApiUnauthorizedResponse({
     description: BaseMessages.unAuthorizedUser,
