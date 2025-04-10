@@ -10,6 +10,7 @@ import { RolesModule } from "@modules/roles/roles.module";
 import { CategoriesModule } from "@modules/categories/categories.module";
 import { QuestionsModule } from "@modules/questions/questions.module";
 import { AnswersModule } from "@modules/answers/answers.module";
+import { ImagesModule } from "@modules/images/images.module";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AnswersModule } from "@modules/answers/answers.module";
     CategoriesModule,
     QuestionsModule,
     AnswersModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
