@@ -4,7 +4,7 @@ import { createAnswerDtoProperties } from "../enums";
 import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
 import { IsNumber } from "class-validator";
 
-class AnswerBaseDto {
+export class AnswerBaseDto {
   @ApiProperty({
     description: createAnswerDtoProperties.question_id,
   })
@@ -39,9 +39,6 @@ export class CreateAnswerChoice {
   choice_id: string;
 }
 export class CreateAnswerForImageQuestionDto extends AnswerBaseDto {
-  @ApiProperty({
-    description: createAnswerDtoProperties.imageAnswer,
-  })
-  @IsNonBlankString({ isOptional: false })
-  imageAnswer: string;
+  @ApiProperty({ type: "string", format: "binary" })
+  image: Express.Multer.File;
 }

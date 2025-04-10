@@ -25,6 +25,8 @@ import { Question } from "@modules/questions/entities/question.entity";
 import { OpenIA } from "api/openIa/enum";
 import { choices } from "@modules/questions/dtos/choices.dto";
 
+import { uploadImage } from "api/minioClient";
+
 @Injectable()
 export class AnswersService {
   async findAllAnswers(): Promise<Answers[]> {
@@ -47,7 +49,7 @@ export class AnswersService {
   async createAnswerForImageQuestion({
     employee_id,
     question_id,
-    imageAnswer,
+    image,
   }: CreateAnswerForImageQuestionDto): Promise<Answers> {
     const [questionExist] = await db<Question>(
       QuestionFieldsProperties.tableName,
@@ -61,6 +63,8 @@ export class AnswersService {
     )
       throw new UnprocessableEntityException(BaseMessages.requiredFields);
 
+    const { url, imagePath } = await uploadImage(image);
+
     const iaAnswer = await getChatResponse<Anomalies | BaseMessages.noAnomaly>({
       inputDataToSend: [
         {
@@ -72,7 +76,7 @@ export class AnswersService {
           content: [
             {
               type: "input_image",
-              image_url: imageAnswer,
+              image_url: url,
               detail: "auto",
             },
           ],
@@ -94,7 +98,7 @@ export class AnswersService {
       .insert({
         employee_id: Number(employee_id),
         question_id,
-        imageAnswer,
+        imageAnswer: imagePath,
         anomalyStatus:
           iaAnswer !== BaseMessages.noAnomaly ? iaAnswer : undefined,
       })

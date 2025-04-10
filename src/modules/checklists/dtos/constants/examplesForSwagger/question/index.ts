@@ -29,6 +29,14 @@ const questionExample01 = [
     iaPrompt:
       'Verifique se de acordo com a resposta do funcionário "Os vidros estão limpos". Caso não esteja, responda: Alerta de anomalia. Caso esteja, responda: Ok.',
   },
+  {
+    question: "Placa do carro",
+    type: QuestionType.FILE_UPLOAD,
+    answerType: AnswerType.IMAGE,
+    isRequired: true,
+    multiple_choice: [],
+    iaPrompt: "",
+  },
 ];
 const questionExample02 = [
   {

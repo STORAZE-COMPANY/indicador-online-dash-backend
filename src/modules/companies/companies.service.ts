@@ -30,10 +30,7 @@ export class CompaniesService {
     if (companyCnpjExist)
       throw new ConflictException(CompaniesResponseMessages.cnpjAlreadyExists);
 
-    const harshPassword = await bcrypt.hash(
-      this.generateRandomCode().toString(),
-      8,
-    );
+    const harshPassword = await bcrypt.hash("senha123", 8);
 
     const [created] = await db<Company>("companies")
       .insert({

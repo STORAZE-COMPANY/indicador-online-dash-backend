@@ -7,9 +7,13 @@ import {
   Query,
   UnauthorizedException,
   UnprocessableEntityException,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import {
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -24,8 +28,14 @@ import { BaseMessages } from "@shared/enums";
 import { AnswerRoutes, AnswerSwaggerInfo } from "./enums";
 import { AnswerChoice, Answers } from "./entities/asnwers.entity";
 import { AnswersService } from "./answers.service";
-import { CreateAnswerChoice, CreateAnswerDto } from "./dtos/create-answer.dto";
+import {
+  AnswerBaseDto,
+  CreateAnswerChoice,
+  CreateAnswerDto,
+} from "./dtos/create-answer.dto";
 import { QuestionId } from "./dtos/find-params.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { schema } from "./auxiliar/constants/swagger";
 
 @Controller(AnswerRoutes.baseUrl)
 @ApiTags(AnswerSwaggerInfo.tags)
@@ -94,10 +104,19 @@ export class AnswersController {
     description: BaseMessages.requiredFields,
     type: UnprocessableEntityException,
   })
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("image"))
+  @ApiBody({
+    schema: schema,
+  })
   async createForImageQuestion(
-    @Body() categoryDto: CreateAnswerDto,
+    @UploadedFile() image: Express.Multer.File,
+    @Body() dto: AnswerBaseDto,
   ): Promise<Answers> {
-    return this.service.createAnswerForSingleQuestion({ ...categoryDto });
+    return this.service.createAnswerForImageQuestion({
+      ...dto,
+      image,
+    });
   }
   @Post(AnswerRoutes.createAnswerForMultipleChoiceQuestion)
   @UseGuards(JwtAuthGuard)
