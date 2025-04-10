@@ -32,6 +32,10 @@ import { choices } from "@modules/questions/dtos/choices.dto";
 
 import { uploadImage } from "api/minioClient";
 import { IaPromptAnswer } from "./entities/iaPromptAnswer.entity";
+import { buildAnswerListWithCheckListQueryWithJoins } from "./auxiliar";
+import { AnswerWithCheckList } from "./dtos/responses.dto";
+import { EmployeesFields } from "@modules/employees/enums";
+import { CompaniesFieldsProperties } from "@modules/companies/enums";
 
 @Injectable()
 export class AnswersService {
@@ -220,5 +224,25 @@ export class AnswersService {
       ...answer,
       openIaResponse: iaAnswer,
     };
+  }
+
+  async findAnswerWithCheckList(): Promise<AnswerWithCheckList[]> {
+    const answers: AnswerWithCheckList[] =
+      await buildAnswerListWithCheckListQueryWithJoins(
+        db<Answers>(AnswerFieldsProperties.tableName),
+      ).select([
+        `${AnswerFieldsProperties.tableName}.*`,
+        `${EmployeesFields.tableName}.name as EmployeeName`,
+        `${CompaniesFieldsProperties.tableName}.name as CompanyName`,
+      ]);
+    const answersWithFlagHasAnomaly = answers.map((answer) => {
+      const hasAnomaly = answer.anomalyStatus !== null ? true : false;
+      return {
+        ...answer,
+        hasAnomaly,
+      };
+    });
+
+    return answersWithFlagHasAnomaly;
   }
 }

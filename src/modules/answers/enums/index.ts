@@ -2,6 +2,8 @@ export enum AnswerRoutes {
   baseUrl = "answers",
   getByQuestionId = "answers-question",
 
+  getWithCheckList = "answers-checklist",
+
   createAnswerForImageQuestion = "answers-image-question",
 
   createAnswerForMultipleChoiceQuestion = "answers-multiple-choice-question",

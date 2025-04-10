@@ -37,6 +37,7 @@ import {
 import { QuestionId } from "./dtos/find-params.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { schema } from "./auxiliar/constants/swagger";
+import { AnswerWithCheckList } from "./dtos/responses.dto";
 
 @Controller(AnswerRoutes.baseUrl)
 @ApiTags(AnswerSwaggerInfo.tags)
@@ -142,5 +143,17 @@ export class AnswersController {
     return this.service.createAnswerForMultipleChoiceQuestion({
       ...answerDto,
     });
+  }
+  @Get(AnswerRoutes.getWithCheckList)
+  @ApiOkResponse({
+    type: [AnswerWithCheckList],
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiUnauthorizedResponse({
+    description: BaseMessages.unAuthorizedUser,
+    type: UnauthorizedException,
+  })
+  async findAnswersWithCheckList(): Promise<AnswerWithCheckList[]> {
+    return this.service.findAnswerWithCheckList();
   }
 }
