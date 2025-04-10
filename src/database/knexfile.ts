@@ -7,11 +7,11 @@ const config: { [key: string]: Knex.Config } = {
   development: {
     client: "pg",
     connection: {
-      host: "localhost",
+      host: process.env.POSTGRES_HOST,
       port: 5432,
-      user: "storaze",
-      password: "storaze_pass",
-      database: "indicador_db",
+      user: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DB,
     },
     migrations: {
       directory: "./src/database/migrations",
