@@ -1,30 +1,29 @@
-import { Readable } from "stream";
+import { Anomalies } from "@shared/enums";
 
-export interface FileProps {
-  fieldname: string;
-  /** Name of the file on the uploader's computer. */
-  originalname: string;
-  /**
-   * Value of the `Content-Transfer-Encoding` header for this file.
-   * @deprecated since July 2015
-   * @see RFC 7578, Section 4.7
-   */
-  encoding: string;
-  /** Value of the `Content-Type` header for this file. */
-  mimetype: string;
-  /** Size of the file in bytes. */
-  size: number;
-  /**
-   * A readable stream of this file. Only available to the `_handleFile`
-   * callback for custom `StorageEngine`s.
-   */
-  stream: Readable;
-  /** `DiskStorage` only: Directory to which this file has been uploaded. */
-  destination: string;
-  /** `DiskStorage` only: Name of this file within `destination`. */
-  filename: string;
-  /** `DiskStorage` only: Full path to the uploaded file. */
-  path: string;
-  /** `MemoryStorage` only: A Buffer containing the entire file. */
-  buffer: Buffer;
+export interface multipleChoiceAnswersWithJoin {
+  id: string;
+  choice_id: string;
+  employee_id: number;
+  created_at: string;
+  updated_at: string;
+  answer: string;
+  anomalyStatus: Anomalies | null;
+  employeeName: string;
+  companyName: string;
+  question: string;
+
+  question_id: string;
+}
+export interface singleQuestionAnswer {
+  id: string;
+  textAnswer: string | null;
+  imageAnswer: string | null;
+  question_id: string;
+  employee_id: number;
+  anomalyStatus: Anomalies | null;
+  created_at: string; // ISO string
+  updated_at: string; // ISO string
+  employeeName: string;
+  companyName: string;
+  question: string;
 }

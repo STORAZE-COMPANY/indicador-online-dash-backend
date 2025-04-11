@@ -34,12 +34,17 @@ import { IaPromptAnswer } from "./entities/iaPromptAnswer.entity";
 import {
   buildAnswerListWithCheckListQueryWithJoins,
   buildIaAnswer,
+  buildMultipleChoiceAnswersQuery,
 } from "./auxiliar";
-import { AnswerWithCheckList } from "./dtos/responses.dto";
+import { AnswersWithQuestions } from "./dtos/responses.dto";
 import { EmployeesFields } from "@modules/employees/enums";
 import { CompaniesFieldsProperties } from "@modules/companies/enums";
 import { getSignedImageUrl, uploadImage } from "api/aws/s3Client";
 import { s3Buckets } from "api/aws/s3Client/enum";
+import {
+  multipleChoiceAnswersWithJoin,
+  singleQuestionAnswer,
+} from "./interfaces";
 
 @Injectable()
 export class AnswersService {
@@ -233,8 +238,8 @@ export class AnswersService {
     };
   }
 
-  async findAnswerWithCheckList(): Promise<AnswerWithCheckList[]> {
-    const answers: AnswerWithCheckList[] =
+  async findAnswerWithCheckList(): Promise<AnswersWithQuestions[]> {
+    const answers: singleQuestionAnswer[] =
       await buildAnswerListWithCheckListQueryWithJoins(
         db<Answers>(AnswerFieldsProperties.tableName),
       ).select([
@@ -243,14 +248,63 @@ export class AnswersService {
         `${CompaniesFieldsProperties.tableName}.name as companyName`,
         `${QuestionFieldsProperties.tableName}.question as question`,
       ]);
-    const answersWithFlagHasAnomaly = answers.map((answer) => {
-      const hasAnomaly = answer.anomalyStatus !== null ? true : false;
-      return {
-        ...answer,
-        hasAnomaly,
-      };
-    });
+    console.log(JSON.stringify(answers, null, 2));
 
-    return answersWithFlagHasAnomaly;
+    const multipleChoiceAnswers: multipleChoiceAnswersWithJoin[] =
+      await buildMultipleChoiceAnswersQuery(
+        db<AnswerChoice>(AnswerChoiceFieldsProperties.tableName),
+      ).select([
+        `${AnswerChoiceFieldsProperties.tableName}.*`,
+        `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.choice} as answer`,
+        `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.id} as choice_id`,
+        `${ChoicesFieldsProperties.tableName}.anomalyStatus as anomalyStatus`,
+        `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id} as question_id`,
+        `${EmployeesFields.tableName}.name as employeeName`,
+        `${CompaniesFieldsProperties.tableName}.name as companyName`,
+        `${QuestionFieldsProperties.tableName}.question as question`,
+      ]);
+    const answersWithFlagHasAnomaly: AnswersWithQuestions[] = answers.map(
+      (answer) => {
+        const hasAnomaly = answer.anomalyStatus !== null ? true : false;
+
+        return {
+          id: answer.id,
+          question: answer.question,
+          answer: answer.textAnswer || answer.imageAnswer || "",
+          question_id: answer.question_id,
+          companyName: answer.companyName,
+          employeeName: answer.employeeName,
+          created_at: answer.created_at,
+          updated_at: answer.updated_at,
+          employee_id: answer.employee_id,
+          anomalyStatus: answer.anomalyStatus || undefined,
+          hasAnomaly,
+        };
+      },
+    );
+
+    const multipleChoiceAnswersWithFlagHasAnomaly: AnswersWithQuestions[] =
+      multipleChoiceAnswers.map((answer) => {
+        const hasAnomaly = answer.anomalyStatus !== null ? true : false;
+
+        return {
+          id: answer.id,
+          question: answer.question,
+          answer: answer.answer,
+          question_id: answer.question_id,
+          companyName: answer.companyName,
+          employeeName: answer.employeeName,
+          created_at: answer.created_at,
+          updated_at: answer.updated_at,
+          employee_id: answer.employee_id,
+          anomalyStatus: answer.anomalyStatus || undefined,
+          hasAnomaly,
+        };
+      });
+
+    return [
+      answersWithFlagHasAnomaly,
+      multipleChoiceAnswersWithFlagHasAnomaly,
+    ].flat();
   }
 }
