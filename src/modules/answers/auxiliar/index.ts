@@ -3,6 +3,7 @@ import { Knex } from "knex";
 import { AnswerFieldsProperties } from "../enums";
 import { CompaniesFieldsProperties } from "@modules/companies/enums";
 import { Anomalies } from "@shared/enums";
+import { QuestionFieldsProperties } from "@modules/questions/enums";
 
 export function buildAnswerListWithCheckListQueryWithJoins(
   base: Knex.QueryBuilder,
@@ -13,7 +14,11 @@ export function buildAnswerListWithCheckListQueryWithJoins(
       `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.employee_id}`,
       `${EmployeesFields.tableName}.${EmployeesFields.id}`,
     )
-
+    .join(
+      QuestionFieldsProperties.tableName,
+      `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.question_id}`,
+      `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
+    )
     .join(
       CompaniesFieldsProperties.tableName,
       `${EmployeesFields.tableName}.${EmployeesFields.company_id}`,

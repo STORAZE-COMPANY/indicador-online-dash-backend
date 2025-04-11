@@ -239,8 +239,9 @@ export class AnswersService {
         db<Answers>(AnswerFieldsProperties.tableName),
       ).select([
         `${AnswerFieldsProperties.tableName}.*`,
-        `${EmployeesFields.tableName}.name as EmployeeName`,
-        `${CompaniesFieldsProperties.tableName}.name as CompanyName`,
+        `${EmployeesFields.tableName}.name as employeeName`,
+        `${CompaniesFieldsProperties.tableName}.name as companyName`,
+        `${QuestionFieldsProperties.tableName}.question as question`,
       ]);
     const answersWithFlagHasAnomaly = answers.map((answer) => {
       const hasAnomaly = answer.anomalyStatus !== null ? true : false;
