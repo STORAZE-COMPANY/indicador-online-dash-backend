@@ -248,7 +248,6 @@ export class AnswersService {
         `${CompaniesFieldsProperties.tableName}.name as companyName`,
         `${QuestionFieldsProperties.tableName}.question as question`,
       ]);
-    console.log(JSON.stringify(answers, null, 2));
 
     const multipleChoiceAnswers: multipleChoiceAnswersWithJoin[] =
       await buildMultipleChoiceAnswersQuery(
