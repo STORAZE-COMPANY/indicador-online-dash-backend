@@ -30,12 +30,16 @@ import { Question } from "@modules/questions/entities/question.entity";
 import { OpenIA } from "api/openIa/enum";
 import { choices } from "@modules/questions/dtos/choices.dto";
 
-import { uploadImage } from "api/minioClient";
 import { IaPromptAnswer } from "./entities/iaPromptAnswer.entity";
-import { buildAnswerListWithCheckListQueryWithJoins } from "./auxiliar";
+import {
+  buildAnswerListWithCheckListQueryWithJoins,
+  buildIaAnswer,
+} from "./auxiliar";
 import { AnswerWithCheckList } from "./dtos/responses.dto";
 import { EmployeesFields } from "@modules/employees/enums";
 import { CompaniesFieldsProperties } from "@modules/companies/enums";
+import { getSignedImageUrl, uploadImage } from "api/aws/s3Client";
+import { s3Buckets } from "api/aws/s3Client/enum";
 
 @Injectable()
 export class AnswersService {
@@ -73,9 +77,18 @@ export class AnswersService {
     )
       throw new UnprocessableEntityException(BaseMessages.requiredFields);
 
-    const { url, imagePath } = await uploadImage(image);
+    const { fileName, url } = await uploadImage({
+      bucket: s3Buckets.INDICADOR_ONLINE_IMAGES,
+      file: image,
+      itemId: question_id,
+    });
 
-    const iaAnswer = await getChatResponse<Anomalies | BaseMessages.noAnomaly>({
+    const signedUrl = await getSignedImageUrl({
+      bucket: s3Buckets.INDICADOR_ONLINE_IMAGES,
+      fileName,
+    });
+
+    const iaAnswer = await getChatResponse<Anomalies>({
       inputDataToSend: [
         {
           role: OpenIA.ia_system,
@@ -86,7 +99,7 @@ export class AnswersService {
           content: [
             {
               type: "input_image",
-              image_url: url,
+              image_url: signedUrl,
               detail: "auto",
             },
           ],
@@ -98,14 +111,8 @@ export class AnswersService {
       .insert({
         employee_id: Number(employee_id),
         question_id,
-        imageAnswer: imagePath,
-
-        anomalyStatus:
-          iaAnswer === Anomalies.anomaly
-            ? iaAnswer
-            : iaAnswer === Anomalies.anomaly_restricted
-              ? iaAnswer
-              : undefined,
+        imageAnswer: url,
+        anomalyStatus: buildIaAnswer({ iaAnswer }),
       })
       .returning("*");
 
