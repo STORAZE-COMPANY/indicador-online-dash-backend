@@ -9,6 +9,8 @@ import { UpdateCompanyDto } from "./dtos/update-company.dto";
 import db from "database/connection";
 import { CompaniesResponseMessages } from "./enums";
 import * as bcrypt from "bcryptjs";
+import { BaseMessages } from "@shared/enums";
+import { CompanyResponse } from "./dtos/response-company.dto";
 
 @Injectable()
 export class CompaniesService {
@@ -23,7 +25,7 @@ export class CompaniesService {
     return company;
   }
 
-  async create(dto: CreateCompanyDto): Promise<Company> {
+  async create(dto: CreateCompanyDto): Promise<CompanyResponse> {
     const companyCnpjExist = await db<Company>("companies")
       .where({ cnpj: dto.cnpj })
       .first();
@@ -41,7 +43,7 @@ export class CompaniesService {
         password: harshPassword,
         email: dto.email,
       })
-      .returning("*");
+      .returning(["id", "cnpj", "email", "name", "isActive", "role_id"]);
     {
       /*  TODO: Implementar envio de email SMTP
       if (created) {
@@ -56,17 +58,47 @@ export class CompaniesService {
     return created;
   }
 
-  async update(id: number, dto: UpdateCompanyDto): Promise<Company> {
-    await this.findOne(id);
-    const [updated] = await db<Company>("companies")
+  async update(dto: UpdateCompanyDto): Promise<CompanyResponse> {
+    const { id, ...company } = dto;
+    const companyExist = await db<Company>("companies")
+      .select("id")
       .where({ id })
+      .first();
+
+    if (!companyExist) {
+      throw new NotFoundException(CompaniesResponseMessages.notFound);
+    }
+    const [existingCnpj, existingEmail] = await Promise.all([
+      company.cnpj
+        ? db<Company>("companies")
+            .select("id")
+            .where({ cnpj: company.cnpj })
+            .whereNot({ id })
+            .first()
+        : null,
+      company.email
+        ? db<Company>("companies")
+            .select("id")
+            .where({ email: company.email })
+            .whereNot({ id })
+            .first()
+        : null,
+    ]);
+
+    if (existingCnpj) {
+      throw new ConflictException(CompaniesResponseMessages.cnpjAlreadyExists);
+    }
+
+    if (existingEmail) {
+      throw new ConflictException(BaseMessages.emailAlreadyExists);
+    }
+
+    const [updated] = await db<Company>("companies")
       .update({
-        name: dto.name,
-        cnpj: dto.cnpj,
-        isActive: dto.isActive,
-        updated_at: db.fn.now(),
+        ...company,
       })
-      .returning("*");
+      .where({ id })
+      .returning(["id", "cnpj", "email", "name", "isActive", "role_id"]);
 
     return updated;
   }

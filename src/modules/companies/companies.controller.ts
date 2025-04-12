@@ -18,10 +18,13 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
 import { Company } from "./entities/company.entity";
 import { CompaniesResponseMessages } from "./enums";
+import { BaseMessages } from "@shared/enums";
+import { CompanyResponse } from "./dtos/response-company.dto";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas às empresas.
@@ -69,7 +72,7 @@ export class CompaniesController {
    */
   @Post()
   @ApiCreatedResponse({
-    type: Company,
+    type: CompanyResponse,
   })
   @ApiConflictResponse({
     description: CompaniesResponseMessages.cnpjAlreadyExists,
@@ -79,23 +82,21 @@ export class CompaniesController {
     return this.service.create(dto);
   }
 
-  /**
-   * Atualiza os dados de uma empresa existente.
-   * @param id Identificador único da empresa.
-   * @param dto Dados para atualização da empresa.
-   * @returns Empresa atualizada.
-   * @throws NotFoundException Se a empresa não for encontrada.
-   */
-  @Put(":id")
+  @Put()
   @ApiOkResponse({
-    type: Company,
+    type: CompanyResponse,
   })
   @ApiNotFoundResponse({
     description: CompaniesResponseMessages.notFound,
     type: NotFoundException,
   })
-  update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateCompanyDto) {
-    return this.service.update(id, dto);
+  @ApiResponse({
+    status: 409,
+    description: `${CompaniesResponseMessages.cnpjAlreadyExists} ou ${BaseMessages.emailAlreadyExists}`,
+    type: ConflictException,
+  })
+  update(@Body() dto: UpdateCompanyDto) {
+    return this.service.update(dto);
   }
 
   /**

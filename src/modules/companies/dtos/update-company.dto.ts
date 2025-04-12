@@ -1,33 +1,53 @@
-import { Optional } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsBoolean, IsNumber, IsString } from "class-validator";
+import { BaseMessagesValidations } from "@shared/enums";
+import { onlyNumbersRegex } from "@shared/validations/annotationsValidations";
+import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
+import {
+  IsBoolean,
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+} from "class-validator";
 
 export class UpdateCompanyDto {
+  @ApiProperty({
+    description: "ID da empresa",
+  })
+  @IsNumber({})
+  id: number;
+
   @ApiProperty({ example: "Empresa XYZ", description: "Nome da empresa" })
-  @IsString()
-  @Optional()
-  name: string;
+  @IsNonBlankString({ isOptional: true })
+  @IsOptional()
+  name?: string;
 
   @ApiProperty({
-    example: "12.345.678/0001-99",
+    example: "12345678000199",
     description: "CNPJ da empresa",
   })
-  @IsString()
-  @Optional()
-  cnpj: string;
+  @IsNonBlankString({ isOptional: true })
+  @IsOptional()
+  @Matches(onlyNumbersRegex, {
+    message: BaseMessagesValidations.withoutSpecialCharacters,
+  })
+  cnpj?: string;
 
   @ApiProperty({ example: true, description: "Se a empresa está ativa ou não" })
   @IsBoolean()
-  @Optional()
-  isActive: boolean;
+  @IsOptional()
+  isActive?: boolean;
+  @ApiProperty({ description: "Email da empresa" })
+  @IsEmail()
+  @IsOptional()
+  email?: string;
 
   @ApiProperty({
-    example: [101, 102, 103],
-    description: "IDs dos checklists associados à empresa",
-    type: [Number],
+    example: "1",
+    description: "ID do nível de acesso associada à empresa",
   })
-  @IsArray()
-  @IsNumber({}, { each: true })
-  @Optional()
-  checklistIds: number[];
+  @IsOptional()
+  @IsString()
+  roleId?: string;
 }
