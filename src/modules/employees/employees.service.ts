@@ -13,6 +13,7 @@ import { BaseMessages } from "@shared/enums";
 import { BasePaginationParams } from "./interfaces";
 import { Knex } from "knex";
 import { EmployeeListDto } from "./dtos/list-employee.dto";
+import { UpdateEmployeeDto } from "./dtos/update-employee.dto";
 // import { sendEmail } from "./smtp";
 
 @Injectable()
@@ -90,6 +91,36 @@ export class EmployeesService {
     */
     }
     return created;
+  }
+
+  async update(employeeUpdate: UpdateEmployeeDto): Promise<Employee> {
+    const { id, ...employee } = employeeUpdate;
+
+    const employeeExists = await db<Employee>("employees")
+      .where({ id })
+      .first();
+
+    if (!employeeExists) throw new NotFoundException(BaseMessages.notFound);
+
+    if (employee.email) {
+      const emailAlreadyExists = await db<Employee>("employees")
+        .where({ email: employee.email })
+        .andWhereNot({ id })
+        .first();
+
+      if (emailAlreadyExists) {
+        throw new ConflictException(BaseMessages.emailAlreadyExists);
+      }
+    }
+
+    const [employeeUpdated] = await db<Employee>("employees")
+      .update({
+        ...employee,
+      })
+      .where({ id })
+      .returning("*");
+
+    return employeeUpdated;
   }
 
   generateRandomCode = () => {

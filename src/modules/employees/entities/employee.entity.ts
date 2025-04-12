@@ -23,7 +23,10 @@ export class Employee {
   role_id: string;
 
   @ApiProperty({ description: EmployeesFieldsProperties.roleId })
-  questionId: string | null;
+  questionId?: string;
+
+  @ApiProperty({ description: EmployeesFieldsProperties.isActive })
+  isActive?: boolean;
 }
 
 export class CreateEmployeeResponse {

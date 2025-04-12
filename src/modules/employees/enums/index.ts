@@ -18,6 +18,8 @@ export enum EmployeesFieldsProperties {
   roleId = "Id do nível do funcionário",
 
   questionId = "ID da pergunta do funcionário",
+
+  isActive = "Status do funcionário",
 }
 
 export enum EmployeesFields {

@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Query,
   UseGuards,
 } from "@nestjs/common";
@@ -12,13 +13,15 @@ import { CreateEmployeeDto } from "./dtos/create-employee.dto";
 import {
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
 } from "@nestjs/swagger";
 import { BaseMessages } from "@shared/enums";
-import { CreateEmployeeResponse } from "./entities/employee.entity";
+import { CreateEmployeeResponse, Employee } from "./entities/employee.entity";
 import { FindParamsDto } from "./dtos/find-params.dto";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 import { EmployeeListDto } from "./dtos/list-employee.dto";
+import { UpdateEmployeeDto } from "./dtos/update-employee.dto";
 
 @Controller("employees")
 export class EmployeesController {
@@ -48,5 +51,21 @@ export class EmployeesController {
       limit: Number(limit),
       page: Number(page),
     });
+  }
+
+  @Put()
+  @ApiOkResponse({
+    type: Employee,
+  })
+  @ApiConflictResponse({
+    description: BaseMessages.alreadyExists,
+    type: ConflictException,
+  })
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+  })
+  @UseGuards(JwtAuthGuard)
+  update(@Body() dto: UpdateEmployeeDto): Promise<Employee> {
+    return this.service.update(dto);
   }
 }
