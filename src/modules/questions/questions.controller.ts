@@ -1,8 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  NotFoundException,
   Post,
+  Put,
   Query,
   UnauthorizedException,
   UnprocessableEntityException,
@@ -10,6 +13,7 @@ import {
 } from "@nestjs/common";
 import {
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -17,13 +21,18 @@ import {
 } from "@nestjs/swagger";
 
 import { BaseMessages } from "@shared/enums";
-import { QuestionsRoutes, QuestionsSwaggerInfo } from "./enums";
+import {
+  QuestionsMessages,
+  QuestionsRoutes,
+  QuestionsSwaggerInfo,
+} from "./enums";
 import { QuestionsWithChoices } from "./dtos/questionsWithChoices.dto";
 import { QuestionsService } from "./questions.service";
 import { FindParamsDto } from "./dtos/find-params.dto";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 import { QuestionDto } from "./dtos/createQuestionDto";
 import { Question } from "./entities/question.entity";
+import { UpdateQuestion } from "./dtos/updateQuestion.dto";
 
 @Controller(QuestionsRoutes.baseUrl)
 @ApiTags(QuestionsSwaggerInfo.tags)
@@ -74,5 +83,33 @@ export class QuestionsController {
       ...dto,
     });
     return question;
+  }
+  @Put()
+  @ApiOkResponse({
+    type: Question,
+  })
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+    type: NotFoundException,
+  })
+  async updateQuestion(@Body() dto: UpdateQuestion): Promise<Question> {
+    const question = await this.service.update({
+      ...dto,
+    });
+    return question;
+  }
+
+  @Delete()
+  @ApiOkResponse({
+    description: QuestionsMessages.successDelete,
+  })
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+    type: NotFoundException,
+  })
+  async deleteQuestion(
+    @Query("questionId") questionId: string,
+  ): Promise<{ message: QuestionsMessages.successDelete }> {
+    return await this.service.delete(questionId);
   }
 }

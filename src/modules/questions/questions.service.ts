@@ -1,9 +1,14 @@
-import { Injectable, UnprocessableEntityException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from "@nestjs/common";
 
 import db from "database/connection";
 import {
   ChoicesFieldsProperties,
   QuestionFieldsProperties,
+  QuestionsMessages,
 } from "@modules/questions/enums";
 import { Question } from "@modules/questions/entities/question.entity";
 import { generateWhereByCheckListItemBuilder } from "./auxiliar/auxiliar.func";
@@ -12,6 +17,7 @@ import { QuestionsWithChoices } from "./dtos/questionsWithChoices.dto";
 import { QuestionType } from "@modules/checklists/enums/question-type.enum";
 import { QuestionDto } from "./dtos/createQuestionDto";
 import { BaseMessages } from "@shared/enums";
+import { UpdateQuestion } from "./dtos/updateQuestion.dto";
 
 @Injectable()
 export class QuestionsService {
@@ -108,5 +114,43 @@ export class QuestionsService {
     }
 
     return createdQuestion;
+  }
+
+  async update(questionToUpdate: UpdateQuestion): Promise<Question> {
+    const { questionId, ...questionData } = questionToUpdate;
+
+    const questionExist = await db<Question>(QuestionFieldsProperties.tableName)
+      .where({ id: questionId })
+      .first();
+    if (!questionExist) throw new NotFoundException(BaseMessages.notFound);
+
+    const [questionUpdated] = await db<Question>(
+      QuestionFieldsProperties.tableName,
+    )
+      .update({
+        ...questionData,
+      })
+      .where({
+        id: questionId,
+      })
+      .returning("*");
+
+    return questionUpdated;
+  }
+
+  async delete(
+    questionId: string,
+  ): Promise<{ message: QuestionsMessages.successDelete }> {
+    const questionExist = await db<Question>(QuestionFieldsProperties.tableName)
+      .where({ id: questionId })
+      .first();
+    if (!questionExist) throw new NotFoundException(BaseMessages.notFound);
+
+    await db<Question>(QuestionFieldsProperties.tableName).delete().where({
+      id: questionId,
+    });
+    return {
+      message: QuestionsMessages.successDelete,
+    };
   }
 }

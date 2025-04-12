@@ -39,10 +39,15 @@ enum QuestionsSwaggerInfo {
   tags = "Questions",
 }
 
+enum QuestionsMessages {
+  successDelete = "Pergunta deletada com sucesso",
+}
+
 export {
   QuestionType,
   QuestionFieldsProperties,
   ChoicesFieldsProperties,
   QuestionsRoutes,
   QuestionsSwaggerInfo,
+  QuestionsMessages,
 };
