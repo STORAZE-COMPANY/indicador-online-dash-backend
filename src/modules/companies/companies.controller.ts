@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   NotFoundException,
   ConflictException,
+  UseGuards,
 } from "@nestjs/common";
 import { CompaniesService } from "./companies.service";
 import { UpdateCompanyDto } from "./dtos/update-company.dto";
@@ -25,6 +26,8 @@ import { Company } from "./entities/company.entity";
 import { CompaniesResponseMessages } from "./enums";
 import { BaseMessages } from "@shared/enums";
 import { CompanyResponse } from "./dtos/response-company.dto";
+import { UpdateCompanySettingsDto } from "./dtos/update-company-settings.dto";
+import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas às empresas.
@@ -95,6 +98,7 @@ export class CompaniesController {
     description: `${CompaniesResponseMessages.cnpjAlreadyExists} ou ${BaseMessages.emailAlreadyExists}`,
     type: ConflictException,
   })
+  @UseGuards(JwtAuthGuard)
   update(@Body() dto: UpdateCompanyDto) {
     return this.service.update(dto);
   }
@@ -111,7 +115,24 @@ export class CompaniesController {
     description: CompaniesResponseMessages.notFound,
     type: NotFoundException,
   })
+  @UseGuards(JwtAuthGuard)
   remove(@Param("id", ParseIntPipe) id: number) {
     return this.service.remove(id);
+  }
+
+  @Post("settings")
+  @ApiCreatedResponse({
+    type: CompanyResponse,
+  })
+  @ApiOkResponse({
+    type: CompanyResponse,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiNotFoundResponse({
+    description: CompaniesResponseMessages.notFound,
+    type: NotFoundException,
+  })
+  updateCompanySettings(@Body() dto: UpdateCompanySettingsDto) {
+    return this.service.updateSettings({ ...dto });
   }
 }

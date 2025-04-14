@@ -11,6 +11,8 @@ import { CompaniesResponseMessages } from "./enums";
 import * as bcrypt from "bcryptjs";
 import { BaseMessages } from "@shared/enums";
 import { CompanyResponse } from "./dtos/response-company.dto";
+import { UpdateCompanySettingsDto } from "./dtos/update-company-settings.dto";
+import { CompanySettings } from "./entities/companySettings.entity";
 
 @Injectable()
 export class CompaniesService {
@@ -99,6 +101,31 @@ export class CompaniesService {
       })
       .where({ id })
       .returning(["id", "cnpj", "email", "name", "isActive", "role_id"]);
+
+    return updated;
+  }
+
+  async updateSettings(
+    dto: UpdateCompanySettingsDto,
+  ): Promise<CompanySettings> {
+    const { company_id, ...settings } = dto;
+    const companyExist = await db<Company>("companies")
+      .select("id")
+      .where({ id: company_id })
+      .first();
+
+    if (!companyExist) {
+      throw new NotFoundException(CompaniesResponseMessages.notFound);
+    }
+
+    const [updated] = await db<CompanySettings>("companySettings")
+      .insert({
+        company_id,
+        ...settings,
+      })
+      .onConflict("company_id")
+      .merge()
+      .returning("*");
 
     return updated;
   }
