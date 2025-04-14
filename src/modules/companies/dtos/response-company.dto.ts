@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { CompaniesFieldsProperties } from "../enums";
+import { CompanySettings } from "../entities/companySettings.entity";
 
 export class CompanyResponse {
   @ApiProperty({ example: 1, description: CompaniesFieldsProperties.id })
@@ -47,4 +48,11 @@ export class CompanyResponse {
     description: CompaniesFieldsProperties.role,
   })
   role_id: string;
+}
+
+export class FindCompanySettings extends CompanySettings {
+  @ApiProperty({
+    description: CompaniesFieldsProperties.name,
+  })
+  companyName: string;
 }

@@ -25,7 +25,10 @@ import {
 import { Company } from "./entities/company.entity";
 import { CompaniesResponseMessages } from "./enums";
 import { BaseMessages } from "@shared/enums";
-import { CompanyResponse } from "./dtos/response-company.dto";
+import {
+  CompanyResponse,
+  FindCompanySettings,
+} from "./dtos/response-company.dto";
 import { UpdateCompanySettingsDto } from "./dtos/update-company-settings.dto";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 
@@ -40,6 +43,12 @@ export class CompaniesController {
    * @param service Serviço responsável pelas operações de empresas.
    */
   constructor(private readonly service: CompaniesService) {}
+
+  @ApiOkResponse({ type: [FindCompanySettings] })
+  @Get("settings")
+  findSettings(): Promise<FindCompanySettings[]> {
+    return this.service.getSettings();
+  }
 
   /**
    * Retorna uma lista de todas as empresas.
@@ -103,12 +112,6 @@ export class CompaniesController {
     return this.service.update(dto);
   }
 
-  /**
-   * Remove uma empresa existente.
-   * @param id Identificador único da empresa.
-   * @returns Confirmação da remoção.
-   * @throws NotFoundException Se a empresa não for encontrada.
-   */
   @Delete(":id")
   @ApiOkResponse()
   @ApiNotFoundResponse({

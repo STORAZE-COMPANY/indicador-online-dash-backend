@@ -10,9 +10,13 @@ import db from "database/connection";
 import { CompaniesResponseMessages } from "./enums";
 import * as bcrypt from "bcryptjs";
 import { BaseMessages } from "@shared/enums";
-import { CompanyResponse } from "./dtos/response-company.dto";
+import {
+  CompanyResponse,
+  FindCompanySettings,
+} from "./dtos/response-company.dto";
 import { UpdateCompanySettingsDto } from "./dtos/update-company-settings.dto";
 import { CompanySettings } from "./entities/companySettings.entity";
+import { buildFindCompanySettingsQuery } from "./aux";
 
 @Injectable()
 export class CompaniesService {
@@ -130,6 +134,14 @@ export class CompaniesService {
     return updated;
   }
 
+  async getSettings(): Promise<FindCompanySettings[]> {
+    const companies: FindCompanySettings[] =
+      await buildFindCompanySettingsQuery(
+        db<CompanySettings>("companySettings"),
+      ).select(["companySettings.*", "companies.name as companyName"]);
+
+    return companies;
+  }
   async remove(id: number): Promise<void> {
     await this.findOne(id);
     await db("companies").where({ id }).del();
