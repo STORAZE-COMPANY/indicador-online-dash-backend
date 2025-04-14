@@ -42,7 +42,7 @@ import { AnswersWithQuestions } from "./dtos/responses.dto";
 @Controller(AnswerRoutes.baseUrl)
 @ApiTags(AnswerSwaggerInfo.tags)
 export class AnswersController {
-  constructor(private readonly service: AnswersService) {}
+  constructor(private readonly service: AnswersService) { }
 
   @Get()
   @ApiOkResponse({
@@ -153,7 +153,9 @@ export class AnswersController {
     description: BaseMessages.unAuthorizedUser,
     type: UnauthorizedException,
   })
-  async findAnswersWithCheckList(): Promise<AnswersWithQuestions[]> {
-    return this.service.findAnswerWithCheckList();
+  async findAnswersWithCheckList(
+    @Query("checkList_id") checkList_id: string,
+  ): Promise<AnswersWithQuestions[]> {
+    return this.service.findAnswerWithCheckList({ checkList_id });
   }
 }

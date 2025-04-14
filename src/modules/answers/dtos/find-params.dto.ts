@@ -1,8 +1,8 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { BasePaginatedParams } from "@shared/enums";
 import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
 import { AnswerFieldsProperties } from "../enums";
-import { IsString } from "class-validator";
+import { IsOptional, IsString } from "class-validator";
 
 export class FindParamsDto {
   @ApiProperty({ description: BasePaginatedParams.limit })
@@ -20,4 +20,11 @@ export class QuestionId extends FindParamsDto {
   @IsNonBlankString({ isOptional: false })
   @IsString()
   question_id: string;
+}
+
+export class CheckListItemId {
+  @ApiPropertyOptional({ description: AnswerFieldsProperties.question_id })
+  @IsNonBlankString({ isOptional: true })
+  @IsOptional()
+  checkList_id?: string;
 }

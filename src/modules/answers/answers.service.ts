@@ -18,7 +18,7 @@ import {
   CreateAnswerDto,
   CreateAnswerForImageQuestionDto,
 } from "./dtos/create-answer.dto";
-import { QuestionId } from "./dtos/find-params.dto";
+import { CheckListItemId, QuestionId } from "./dtos/find-params.dto";
 import { getChatResponse } from "api/openIa";
 import {
   ChoicesFieldsProperties,
@@ -238,11 +238,15 @@ export class AnswersService {
     };
   }
 
-  async findAnswerWithCheckList(): Promise<AnswersWithQuestions[]> {
+  async findAnswerWithCheckList({
+    checkList_id,
+  }: CheckListItemId): Promise<AnswersWithQuestions[]> {
+    console.log("checkList_id", checkList_id);
     const answers: singleQuestionAnswer[] =
-      await buildAnswerListWithCheckListQueryWithJoins(
-        db<Answers>(AnswerFieldsProperties.tableName),
-      ).select([
+      await buildAnswerListWithCheckListQueryWithJoins({
+        base: db<Answers>(AnswerFieldsProperties.tableName),
+        checkListItemId: checkList_id,
+      }).select([
         `${AnswerFieldsProperties.tableName}.*`,
         `${EmployeesFields.tableName}.name as employeeName`,
         `${CompaniesFieldsProperties.tableName}.name as companyName`,
@@ -250,9 +254,10 @@ export class AnswersService {
       ]);
 
     const multipleChoiceAnswers: multipleChoiceAnswersWithJoin[] =
-      await buildMultipleChoiceAnswersQuery(
-        db<AnswerChoice>(AnswerChoiceFieldsProperties.tableName),
-      ).select([
+      await buildMultipleChoiceAnswersQuery({
+        base: db<AnswerChoice>(AnswerChoiceFieldsProperties.tableName),
+        checkListItemId: checkList_id,
+      }).select([
         `${AnswerChoiceFieldsProperties.tableName}.*`,
         `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.choice} as answer`,
         `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.id} as choice_id`,

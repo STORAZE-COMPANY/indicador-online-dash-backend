@@ -8,9 +8,13 @@ import {
   QuestionFieldsProperties,
 } from "@modules/questions/enums";
 
-export function buildAnswerListWithCheckListQueryWithJoins(
-  base: Knex.QueryBuilder,
-): Knex.QueryBuilder {
+export function buildAnswerListWithCheckListQueryWithJoins({
+  base,
+  checkListItemId,
+}: {
+  base: Knex.QueryBuilder;
+  checkListItemId?: string;
+}): Knex.QueryBuilder {
   return base
     .join(
       EmployeesFields.tableName,
@@ -29,12 +33,24 @@ export function buildAnswerListWithCheckListQueryWithJoins(
       `${CompaniesFieldsProperties.tableName}.id`,
     )
 
+    .where((builder) => {
+      if (checkListItemId) {
+        builder.where(
+          `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
+          checkListItemId,
+        );
+      }
+    })
     .distinct();
 }
 
-export function buildMultipleChoiceAnswersQuery(
-  base: Knex.QueryBuilder,
-): Knex.QueryBuilder {
+export function buildMultipleChoiceAnswersQuery({
+  base,
+  checkListItemId,
+}: {
+  base: Knex.QueryBuilder;
+  checkListItemId?: string;
+}): Knex.QueryBuilder {
   return base
     .join(
       ChoicesFieldsProperties.tableName,
@@ -55,7 +71,15 @@ export function buildMultipleChoiceAnswersQuery(
       QuestionFieldsProperties.tableName,
       `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.question_id}`,
       `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
-    );
+    )
+    .where((builder) => {
+      if (checkListItemId) {
+        builder.where(
+          `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
+          checkListItemId,
+        );
+      }
+    });
 }
 
 /**
