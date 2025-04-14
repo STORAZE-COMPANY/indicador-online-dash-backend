@@ -251,6 +251,7 @@ export class AnswersService {
         `${EmployeesFields.tableName}.name as employeeName`,
         `${CompaniesFieldsProperties.tableName}.name as companyName`,
         `${QuestionFieldsProperties.tableName}.question as question`,
+        `${QuestionFieldsProperties.tableName}.type as type`,
       ]);
 
     const multipleChoiceAnswers: multipleChoiceAnswersWithJoin[] =
@@ -266,6 +267,7 @@ export class AnswersService {
         `${EmployeesFields.tableName}.name as employeeName`,
         `${CompaniesFieldsProperties.tableName}.name as companyName`,
         `${QuestionFieldsProperties.tableName}.question as question`,
+        `${QuestionFieldsProperties.tableName}.type as type`,
       ]);
     const answersWithFlagHasAnomaly: AnswersWithQuestions[] = answers.map(
       (answer) => {
@@ -282,6 +284,7 @@ export class AnswersService {
           updated_at: answer.updated_at,
           employee_id: answer.employee_id,
           anomalyStatus: answer.anomalyStatus || undefined,
+          type: answer.type,
           hasAnomaly,
         };
       },
@@ -302,6 +305,7 @@ export class AnswersService {
           updated_at: answer.updated_at,
           employee_id: answer.employee_id,
           anomalyStatus: answer.anomalyStatus || undefined,
+          type: answer.type,
           hasAnomaly,
         };
       });

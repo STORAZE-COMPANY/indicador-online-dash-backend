@@ -3,6 +3,7 @@ import { choices } from "@modules/questions/dtos/choices.dto";
 import { AnswerFieldsProperties } from "../enums";
 import { Anomalies } from "@shared/enums";
 import { AnswerChoice } from "../entities/asnwers.entity";
+import { QuestionType } from "@modules/questions/enums";
 
 export class AnswerWithCheckList {
   @ApiProperty({
@@ -106,4 +107,10 @@ export class AnswersWithQuestions {
 
   @ApiProperty({ description: "Se teve anomalia na resposta ou não" })
   hasAnomaly: boolean;
+
+  @ApiProperty({
+    description: "Tipo da questão vinculada a resposta",
+    enum: QuestionType,
+  })
+  type: QuestionType;
 }

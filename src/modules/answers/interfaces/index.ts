@@ -1,3 +1,4 @@
+import { QuestionType } from "@modules/questions/enums";
 import { Anomalies } from "@shared/enums";
 
 export interface multipleChoiceAnswersWithJoin {
@@ -13,6 +14,7 @@ export interface multipleChoiceAnswersWithJoin {
   question: string;
 
   question_id: string;
+  type: QuestionType;
 }
 export interface singleQuestionAnswer {
   id: string;
@@ -26,4 +28,6 @@ export interface singleQuestionAnswer {
   employeeName: string;
   companyName: string;
   question: string;
+
+  type: QuestionType;
 }
