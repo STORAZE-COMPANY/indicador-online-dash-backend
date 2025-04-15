@@ -9,7 +9,7 @@ import { UpdateCompanyDto } from "./dtos/update-company.dto";
 import db from "database/connection";
 import { CompaniesResponseMessages } from "./enums";
 import * as bcrypt from "bcryptjs";
-import { BaseMessages } from "@shared/enums";
+import { BaseMessages, smtpMessages } from "@shared/enums";
 import {
   CompanyResponse,
   FindCompanySettings,
@@ -17,6 +17,8 @@ import {
 import { UpdateCompanySettingsDto } from "./dtos/update-company-settings.dto";
 import { CompanySettings } from "./entities/companySettings.entity";
 import { buildFindCompanySettingsQuery } from "./aux";
+import { sendEmail } from "@modules/employees/smtp";
+import { buildHtmlTemplateForPassword } from "@modules/employees/smtp/aux/html-template";
 
 @Injectable()
 export class CompaniesService {
@@ -37,8 +39,8 @@ export class CompaniesService {
       .first();
     if (companyCnpjExist)
       throw new ConflictException(CompaniesResponseMessages.cnpjAlreadyExists);
-
-    const harshPassword = await bcrypt.hash("senha123", 8);
+    const randomCode = this.generateRandomCode().toString();
+    const harshPassword = await bcrypt.hash(randomCode, 8);
 
     const [created] = await db<Company>("companies")
       .insert({
@@ -50,16 +52,13 @@ export class CompaniesService {
         email: dto.email,
       })
       .returning(["id", "cnpj", "email", "name", "isActive", "role_id"]);
-    {
-      /*  TODO: Implementar envio de email SMTP
-      if (created) {
-         await sendEmail({
-           to: email,
-           subject: EmployeesResponseMessages.welcome,
-           text: EmployeesResponseMessages.yourPassword + harshPassword,
-         });
-       }
-      */
+    if (created) {
+      await sendEmail({
+        to: dto.email,
+        subject: smtpMessages.welcome,
+        text: "",
+        html: buildHtmlTemplateForPassword(randomCode),
+      });
     }
     return created;
   }

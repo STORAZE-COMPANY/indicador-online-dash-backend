@@ -1,28 +1,36 @@
 import { createTransport } from "nodemailer";
 import { SendEmailProps } from "./interfaces";
 
-export const sendEmail = async ({ subject, text, to }: SendEmailProps) => {
+const emailSmtp = "notification@cliqfy.com.br";
+const passwordSmtp = "X(285159706557ag";
+const smtpHost = "smtp.office365.com";
+
+export const sendEmail = async ({
+  subject,
+  text,
+  to,
+  html,
+}: SendEmailProps) => {
   try {
     const transporter = createTransport({
-      host: "smtp.exemplo.com", // Exemplo: "smtp.gmail.com"
-      port: 587, // Porta SMTP (normalmente 587 ou 465 para SSL)
-      secure: false, // true para 465, false para 587
+      host: smtpHost,
+      port: 587,
+      secure: false,
       auth: {
-        user: "seuemail@exemplo.com",
-        pass: "suasenha",
+        user: emailSmtp,
+        pass: passwordSmtp,
       },
     });
 
-    const mailOptions = {
-      from: '"Seu Nome" <seuemail@exemplo.com>',
+    await transporter.sendMail({
+      from: `<${emailSmtp}>`,
       to,
       subject,
       text,
-    };
-
-    await transporter.sendMail(mailOptions);
+      html,
+    });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Erro ao enviar e-mail:", errorMessage);
+    console.error("Erro ao enviar e-mail:", error);
+    throw new Error("Erro ao enviar e-mail");
   }
 };

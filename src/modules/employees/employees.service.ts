@@ -9,11 +9,13 @@ import { CreateEmployeeResponse, Employee } from "./entities/employee.entity";
 import { CreateEmployeeDto } from "./dtos/create-employee.dto";
 import db from "database/connection";
 import { EmployeesResponseMessages } from "./enums";
-import { BaseMessages } from "@shared/enums";
+import { BaseMessages, smtpMessages } from "@shared/enums";
 import { BasePaginationParams } from "./interfaces";
 import { Knex } from "knex";
 import { EmployeeListDto } from "./dtos/list-employee.dto";
 import { UpdateEmployeeDto } from "./dtos/update-employee.dto";
+import { sendEmail } from "./smtp";
+import { buildHtmlTemplateForPassword } from "./smtp/aux/html-template";
 // import { sendEmail } from "./smtp";
 
 @Injectable()
@@ -64,10 +66,8 @@ export class EmployeesService {
       .first();
     if (emailAlreadyExists)
       throw new ConflictException(BaseMessages.emailAlreadyExists);
-    const harshPassword = await bcrypt.hash(
-      this.generateRandomCode().toString(),
-      8,
-    );
+    const randomCode = this.generateRandomCode().toString();
+    const harshPassword = await bcrypt.hash(randomCode, 8);
     const [created] = await db<Employee>("employees")
       .insert({
         company_id,
@@ -79,17 +79,15 @@ export class EmployeesService {
       })
       .returning(["id", "company_id", "email", "name", "phone", "role_id"]);
 
-    {
-      /*  TODO: Implementar envio de email SMTP
     if (created) {
-       await sendEmail({
-         to: email,
-         subject: smtpMessages.welcome,
-         text: smtpMessages.yourPassword + harshPassword,
-       });
-     }
-    */
+      await sendEmail({
+        to: email,
+        subject: smtpMessages.welcome,
+        text: "",
+        html: buildHtmlTemplateForPassword(randomCode),
+      });
     }
+
     return created;
   }
 
