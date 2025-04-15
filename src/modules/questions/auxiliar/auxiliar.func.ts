@@ -4,16 +4,10 @@ import {
   ChoicesFieldsProperties,
   QuestionFieldsProperties,
 } from "@modules/questions/enums";
-
-export function generateWhereByCheckListItemBuilder({
-  checkListItemId,
-}: {
-  checkListItemId: string;
-}) {
-  return (builder: Knex.QueryBuilder<Question>) => {
-    builder.where(QuestionFieldsProperties.checkList_id, checkListItemId);
-  };
-}
+import {
+  AnswerChoiceFieldsProperties,
+  AnswerFieldsProperties,
+} from "@modules/answers/enums";
 
 /**
  * Gera uma lista de seleções para consulta de questões no banco de dados.
@@ -53,4 +47,56 @@ export function generateChoicesSelect() {
     `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.anomaly} as choice_anomaly`,
     `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.createdAt} as choice_created_at`,
   ];
+}
+export function generateWhereByCheckListItemBuilder({
+  checkListItemId,
+  onlyUnanswered,
+}: {
+  checkListItemId: string;
+  onlyUnanswered?: boolean;
+}) {
+  return (builder: Knex.QueryBuilder<Question>) => {
+    builder.where(QuestionFieldsProperties.checkList_id, checkListItemId);
+    if (onlyUnanswered) {
+      builder.whereNot(
+        `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.question_id} = ${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
+      );
+    }
+  };
+}
+export function buildFindQuestionByCheckListQuery({
+  Knek,
+  checkListItemId,
+}: {
+  Knek: Knex.QueryBuilder<Question>;
+  checkListItemId: string;
+}): Knex.QueryBuilder {
+  const questionTable = QuestionFieldsProperties.tableName;
+  const choiceTable = ChoicesFieldsProperties.tableName;
+  const answerChoiceTable = AnswerChoiceFieldsProperties.tableName;
+  return Knek.leftJoin(
+    AnswerFieldsProperties.tableName,
+    `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
+    `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.question_id}`,
+  )
+
+    .where((builder) => {
+      builder.where(QuestionFieldsProperties.checkList_id, checkListItemId);
+    })
+    .andWhere(function () {
+      this.whereNull(
+        `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.question_id}`,
+      ).whereNotExists(function () {
+        this.select("*")
+          .from(`${choiceTable} as c`)
+          .innerJoin(
+            `${answerChoiceTable} as ac`,
+            `ac.${AnswerChoiceFieldsProperties.choice_id}`,
+            `c.${ChoicesFieldsProperties.id}`,
+          )
+          .whereRaw(
+            `c.${ChoicesFieldsProperties.question_id} = ${questionTable}.${QuestionFieldsProperties.id}`,
+          );
+      });
+    });
 }

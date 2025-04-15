@@ -53,6 +53,7 @@ export class QuestionsController {
   ): Promise<QuestionsWithChoices[]> {
     return this.service.findQuestionByCheckListItem({
       checkListItemId,
+
       limit: Number(limit),
       page: Number(page),
     });

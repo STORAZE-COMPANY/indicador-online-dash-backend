@@ -47,7 +47,7 @@
     "multer": "^1.4.5-lts.2",
     "multer-s3": "^3.0.1",
     "nodemailer": "^6.10.0",
-    "openai": "^4.92.0",
+    "openai": "^4.94.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.14.1",

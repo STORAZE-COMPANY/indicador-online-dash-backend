@@ -11,7 +11,7 @@ import {
   QuestionsMessages,
 } from "@modules/questions/enums";
 import { Question } from "@modules/questions/entities/question.entity";
-import { generateWhereByCheckListItemBuilder } from "./auxiliar/auxiliar.func";
+import { buildFindQuestionByCheckListQuery } from "./auxiliar/auxiliar.func";
 import { choices } from "./dtos/choices.dto";
 import { QuestionsWithChoices } from "./dtos/questionsWithChoices.dto";
 import { QuestionType } from "@modules/checklists/enums/question-type.enum";
@@ -27,19 +27,19 @@ export class QuestionsService {
     page,
   }: {
     checkListItemId: string;
+    onlyUnanswered?: boolean;
     page: number;
     limit: number;
   }): Promise<QuestionsWithChoices[]> {
     const offset = (page - 1) * limit;
 
-    const questions = await db<Question>(QuestionFieldsProperties.tableName)
-      .where(
-        generateWhereByCheckListItemBuilder({
-          checkListItemId,
-        }),
-      )
+    const questions: Question[] = await buildFindQuestionByCheckListQuery({
+      Knek: db<Question>(QuestionFieldsProperties.tableName),
+      checkListItemId,
+    })
       .limit(limit)
-      .offset(offset);
+      .offset(offset)
+      .select([`${QuestionFieldsProperties.tableName}.*`]);
 
     const questionsWithChoices = await Promise.all(
       questions.map(async (question) => {
@@ -54,6 +54,7 @@ export class QuestionsService {
         return question;
       }),
     );
+
     return questionsWithChoices;
   }
   async findAll(): Promise<QuestionsWithChoices[]> {
