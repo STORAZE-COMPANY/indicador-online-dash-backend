@@ -2,7 +2,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
-  GetObjectAclCommand,
+  GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import { extname } from "path";
 import {
@@ -59,21 +59,26 @@ export async function uploadImage({
   itemId,
   bucket,
 }: uploadImageProps): Promise<uploadImageResponse> {
-  const fileExtension = extname(file.originalname);
-  const fileNameToUpload = `${itemId}${fileExtension}`;
+  try {
+    const fileExtension = extname(file.originalname);
+    const fileNameToUpload = `${S3Props.directory}${itemId}${fileExtension}`;
 
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: fileNameToUpload,
-    Body: file.buffer,
-    ContentType: file.mimetype,
-  });
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: fileNameToUpload,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    });
 
-  await s3Client.send(command);
-  return {
-    url: `https://${bucket}.s3.amazonaws.com/${fileNameToUpload}`,
-    fileName: fileNameToUpload,
-  };
+    await s3Client.send(command);
+    return {
+      url: `https://${bucket}.s3.amazonaws.com/${fileNameToUpload}`,
+      fileName: fileNameToUpload,
+    };
+  } catch (error) {
+    console.error("Error uploading image to S3:", error);
+    throw error;
+  }
 }
 
 /**
@@ -110,12 +115,17 @@ export async function getSignedImageUrl({
   bucket,
   fileName,
 }: getImageProps): Promise<string> {
-  const command = new GetObjectAclCommand({
-    Bucket: bucket,
-    Key: fileName,
-  });
+  try {
+    const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: fileName,
+    });
 
-  return await getSignedUrl(s3Client, command, {
-    expiresIn: Number(S3Props.expiries_time_singed_url),
-  });
+    return await getSignedUrl(s3Client, command, {
+      expiresIn: Number(S3Props.expiries_time_singed_url),
+    });
+  } catch (error) {
+    console.error("Error generating signed URL:", error);
+    throw error;
+  }
 }

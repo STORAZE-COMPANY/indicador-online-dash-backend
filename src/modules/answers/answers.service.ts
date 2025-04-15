@@ -5,6 +5,7 @@ import {
 } from "@nestjs/common";
 
 import db from "database/connection";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   AnomalyResolutionFieldsProperties,
@@ -89,14 +90,13 @@ export class AnswersService {
     const { fileName, url } = await uploadImage({
       bucket: s3Buckets.INDICADOR_ONLINE_IMAGES,
       file: image,
-      itemId: question_id,
+      itemId: uuidv4(),
     });
 
     const signedUrl = await getSignedImageUrl({
       bucket: s3Buckets.INDICADOR_ONLINE_IMAGES,
       fileName,
     });
-
     const iaAnswer = await getChatResponse<Anomalies>({
       inputDataToSend: [
         {

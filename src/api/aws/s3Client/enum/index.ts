@@ -8,4 +8,6 @@ export enum S3Props {
   file_limit_5MB = 5 * 1024 * 1024, // 5 MB
 
   expiries_time_singed_url = 1200, // 20 minutes
+
+  directory = "app-images/questions-answers/",
 }
