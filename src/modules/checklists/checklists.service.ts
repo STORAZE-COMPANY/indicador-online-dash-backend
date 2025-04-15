@@ -32,6 +32,7 @@ import {
 } from "@modules/questions/enums";
 import { Question } from "@modules/questions/entities/question.entity";
 import { Anomalies, BaseMessages } from "@shared/enums";
+import { CategoriesFieldsProperties } from "@modules/categories/enums";
 
 @Injectable()
 export class ChecklistsService {
@@ -137,6 +138,8 @@ export class ChecklistsService {
         employeeId,
       ).select([
         `${CheckListItemFieldsProperties.tableName}.id as checklistId`,
+        `${CategoriesFieldsProperties.tableName}.name as categoryName`,
+
         `${CheckListFieldsProperties.tableName}.name as checklistName`,
       ]);
 

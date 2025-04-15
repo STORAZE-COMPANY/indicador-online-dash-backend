@@ -22,6 +22,8 @@ import { FindParamsDto } from "./dtos/find-params.dto";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 import { EmployeeListDto } from "./dtos/list-employee.dto";
 import { UpdateEmployeeDto } from "./dtos/update-employee.dto";
+import { sendEmail } from "./smtp";
+import { buildHtmlTemplateForPassword } from "./smtp/aux/html-template";
 
 @Controller("employees")
 export class EmployeesController {
@@ -67,5 +69,15 @@ export class EmployeesController {
   @UseGuards(JwtAuthGuard)
   update(@Body() dto: UpdateEmployeeDto): Promise<Employee> {
     return this.service.update(dto);
+  }
+
+  @Get("send-email")
+  async sendEmail(@Query("email") email: string) {
+    await sendEmail({
+      subject: "Test",
+      text: "Test",
+      to: email,
+      html: buildHtmlTemplateForPassword("123456"),
+    });
   }
 }

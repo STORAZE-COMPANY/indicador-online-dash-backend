@@ -26,6 +26,7 @@ import { Question } from "@modules/questions/entities/question.entity";
 import { FindParamsDto } from "../dtos/find-params.dto";
 import { EmployeesFields } from "@modules/employees/enums";
 import { Employee } from "@modules/employees/entities/employee.entity";
+import { CategoriesFieldsProperties } from "@modules/categories/enums";
 
 /**
  * Cria um item de checklist no banco de dados utilizando uma transação.
@@ -343,6 +344,11 @@ export function buildCheckListWithEmployeeRelatedQueryWithJoins(
       EmployeesFields.tableName,
       `${EmployeesFields.tableName}.${EmployeesFields.id}`,
       `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.employee_id}`,
+    )
+    .join(
+      CategoriesFieldsProperties.tableName,
+      `${CategoriesFieldsProperties.tableName}.id`,
+      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.categories_id}`,
     )
 
     .leftJoin(

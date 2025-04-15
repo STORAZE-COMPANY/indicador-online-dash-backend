@@ -104,4 +104,10 @@ export class CheckListForSpecificEmployee {
   })
   @IsString()
   checklistName: string;
+
+  @ApiProperty({
+    description: "Nome da categoria do checklist",
+  })
+  @IsString()
+  categoryName: string;
 }
