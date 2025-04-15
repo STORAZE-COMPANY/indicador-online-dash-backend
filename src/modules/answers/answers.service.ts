@@ -7,6 +7,7 @@ import {
 import db from "database/connection";
 
 import {
+  AnomalyResolutionFieldsProperties,
   AnswerChoiceFieldsProperties,
   AnswerFieldsProperties,
   IaPromptAnswerFieldsProperties,
@@ -14,6 +15,7 @@ import {
 import { AnswerChoice, Answers } from "./entities/asnwers.entity";
 import {
   AnswerResponse,
+  CreateAnomalyResolutionDTO,
   CreateAnswerChoice,
   CreateAnswerDto,
   CreateAnswerForImageQuestionDto,
@@ -45,6 +47,8 @@ import {
   multipleChoiceAnswersWithJoin,
   singleQuestionAnswer,
 } from "./interfaces";
+import { AnomalyResolution } from "./entities/answersResolution.entity";
+import { UpdateAnomalyResolutionDTO } from "./dtos/update-answer.dto";
 
 @Injectable()
 export class AnswersService {
@@ -236,6 +240,76 @@ export class AnswersService {
       ...answer,
       openIaResponse: iaAnswer,
     };
+  }
+
+  async createResolutionForAnomaly({
+    answer_id,
+    description,
+    imageUrl,
+  }: CreateAnomalyResolutionDTO): Promise<AnomalyResolution> {
+    const [answerExist] = await db<Answers>(AnswerFieldsProperties.tableName)
+      .where({ id: answer_id })
+      .returning("*");
+
+    if (!answerExist) throw new NotFoundException(BaseMessages.notFound);
+
+    const [resolution] = await db<AnomalyResolution>(
+      AnomalyResolutionFieldsProperties.tableName,
+    )
+      .insert({
+        answer_id,
+        description,
+        imageUrl,
+      })
+      .returning("*");
+
+    return resolution;
+  }
+
+  async updateResolutionForAnomaly({
+    id,
+    employee_Id,
+    status,
+  }: UpdateAnomalyResolutionDTO) {
+    const [resolutionExist] = await db<AnomalyResolution>(
+      AnomalyResolutionFieldsProperties.tableName,
+    )
+      .where({ id })
+      .returning("*");
+
+    if (!resolutionExist) throw new NotFoundException(BaseMessages.notFound);
+
+    const [resolution] = await db<AnomalyResolution>(
+      AnomalyResolutionFieldsProperties.tableName,
+    )
+      .where({ id })
+      .update({
+        status,
+        updated_by: employee_Id,
+      })
+      .returning("*");
+
+    return resolution;
+  }
+
+  async findAnomalyResolutionList(): Promise<AnomalyResolution[]> {
+    const resolutions: AnomalyResolution[] = await db<AnomalyResolution>(
+      AnomalyResolutionFieldsProperties.tableName,
+    ).select("*");
+
+    return resolutions;
+  }
+
+  async findAnomalyResolutionByAnswerId(
+    answer_id: string,
+  ): Promise<AnomalyResolution> {
+    const [resolution] = await db<AnomalyResolution>(
+      AnomalyResolutionFieldsProperties.tableName,
+    )
+      .where({ answer_id })
+      .returning("*");
+
+    return resolution;
   }
 
   async findAnswerWithCheckList({

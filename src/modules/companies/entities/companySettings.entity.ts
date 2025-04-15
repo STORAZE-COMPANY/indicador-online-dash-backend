@@ -1,5 +1,4 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, IsOptional } from "class-validator";
 
 export class CompanySettings {
   @ApiProperty({
@@ -11,14 +10,21 @@ export class CompanySettings {
     description: "tempo de expiração das respostas em minutos",
     type: Number,
   })
-  @IsNumber()
-  @IsOptional()
   answersExpirationTime?: number;
 
   @ApiProperty({
     description: "ID da empresa",
     type: Number,
   })
-  @IsNumber()
   company_id: number;
+
+  @ApiProperty({
+    description: "Data de criação do registro",
+  })
+  created_at: string;
+
+  @ApiProperty({
+    description: "Data de atualização do registro",
+  })
+  updated_at: string;
 }

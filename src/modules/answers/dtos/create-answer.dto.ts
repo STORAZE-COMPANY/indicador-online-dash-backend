@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 
 import { createAnswerDtoProperties } from "../enums";
 import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
-import { IsNumber } from "class-validator";
+import { IsNumber, IsOptional } from "class-validator";
 import { Answers } from "../entities/asnwers.entity";
 
 export class AnswerBaseDto {
@@ -49,4 +49,29 @@ export class AnswerResponse extends Answers {
     description: createAnswerDtoProperties.openIaResponse,
   })
   openIaResponse: string;
+}
+export class CreateAnomalyResolutionDTO {
+  @ApiProperty({
+    example: "This is a description of the anomaly resolution.",
+    description: "Description of the anomaly resolution",
+  })
+  @IsNonBlankString({ isOptional: true })
+  @IsOptional()
+  description?: string;
+
+  @ApiProperty({
+    example: "This is a description of the anomaly resolution.",
+    description: "Description of the anomaly resolution",
+  })
+  @IsNonBlankString({ isOptional: true })
+  @IsOptional()
+  imageUrl?: string;
+
+  @ApiProperty({
+    example: "e5b7f1c3-2d4b-4c8a-9c2b-3f6d5e7a8b9c",
+    description:
+      "Unique identifier for the answer associated with the anomaly resolution",
+  })
+  @IsNonBlankString({ isOptional: false })
+  answer_id: string;
 }

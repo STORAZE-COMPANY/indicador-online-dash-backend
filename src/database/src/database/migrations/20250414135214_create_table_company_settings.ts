@@ -4,6 +4,8 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("companySettings", (table) => {
     table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
     table.integer("answersExpirationTime").nullable();
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
     table
       .integer("company_id")
       .notNullable()

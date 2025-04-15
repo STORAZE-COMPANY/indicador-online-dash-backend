@@ -142,6 +142,7 @@ export class CompaniesService {
 
     return companies;
   }
+
   async remove(id: number): Promise<void> {
     await this.findOne(id);
     await db("companies").where({ id }).del();

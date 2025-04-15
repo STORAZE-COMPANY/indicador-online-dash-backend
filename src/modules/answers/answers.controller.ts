@@ -4,6 +4,7 @@ import {
   Get,
   NotFoundException,
   Post,
+  Put,
   Query,
   UnauthorizedException,
   UnprocessableEntityException,
@@ -31,6 +32,7 @@ import { AnswersService } from "./answers.service";
 import {
   AnswerBaseDto,
   AnswerResponse,
+  CreateAnomalyResolutionDTO,
   CreateAnswerChoice,
   CreateAnswerDto,
 } from "./dtos/create-answer.dto";
@@ -38,11 +40,13 @@ import { QuestionId } from "./dtos/find-params.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { schema } from "./auxiliar/constants/swagger";
 import { AnswersWithQuestions } from "./dtos/responses.dto";
+import { AnomalyResolution } from "./entities/answersResolution.entity";
+import { UpdateAnomalyResolutionDTO } from "./dtos/update-answer.dto";
 
 @Controller(AnswerRoutes.baseUrl)
 @ApiTags(AnswerSwaggerInfo.tags)
 export class AnswersController {
-  constructor(private readonly service: AnswersService) { }
+  constructor(private readonly service: AnswersService) {}
 
   @Get()
   @ApiOkResponse({
@@ -157,5 +161,69 @@ export class AnswersController {
     @Query("checkList_id") checkList_id: string,
   ): Promise<AnswersWithQuestions[]> {
     return this.service.findAnswerWithCheckList({ checkList_id });
+  }
+
+  @Post(AnswerRoutes.createAnomalyResolution)
+  @ApiCreatedResponse({
+    type: AnomalyResolution,
+  })
+  @ApiUnauthorizedResponse({
+    description: BaseMessages.unAuthorizedUser,
+    type: UnauthorizedException,
+  })
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+    type: NotFoundException,
+  })
+  @UseGuards(JwtAuthGuard)
+  async createAnomalyResolution(
+    @Body() dto: CreateAnomalyResolutionDTO,
+  ): Promise<AnomalyResolution> {
+    return this.service.createResolutionForAnomaly({ ...dto });
+  }
+
+  @Put(AnswerRoutes.updateAnomalyResolution)
+  @ApiOkResponse({
+    type: AnomalyResolution,
+  })
+  @ApiUnauthorizedResponse({
+    description: BaseMessages.unAuthorizedUser,
+    type: UnauthorizedException,
+  })
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+    type: NotFoundException,
+  })
+  async updateAnomalyResolution(@Body() dto: UpdateAnomalyResolutionDTO) {
+    return this.service.updateResolutionForAnomaly({ ...dto });
+  }
+
+  @Get(AnswerRoutes.getAnomalyResolutionByAnswerId)
+  @ApiOkResponse({
+    type: AnomalyResolution,
+  })
+  @ApiUnauthorizedResponse({
+    description: BaseMessages.unAuthorizedUser,
+    type: UnauthorizedException,
+  })
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+    type: NotFoundException,
+  })
+  @UseGuards(JwtAuthGuard)
+  async findAnomalyResolutionById(@Query("answer_id") answer_id: string) {
+    return this.service.findAnomalyResolutionByAnswerId(answer_id);
+  }
+  @Get(AnswerRoutes.getAnomalyResolution)
+  @ApiOkResponse({
+    type: [AnomalyResolution],
+  })
+  @ApiUnauthorizedResponse({
+    description: BaseMessages.unAuthorizedUser,
+    type: UnauthorizedException,
+  })
+  @UseGuards(JwtAuthGuard)
+  async findAnomalyResolutionList() {
+    return this.service.findAnomalyResolutionList();
   }
 }
