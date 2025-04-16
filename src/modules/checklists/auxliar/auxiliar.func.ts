@@ -259,7 +259,41 @@ export function buildCheckListItemQueryWithJoins(
     .limit(limit)
     .offset(offset);
 }
+export function buildCheckListQueryWithJoins(
+  base: Knex.QueryBuilder,
+  params: Partial<FindParamsDto>,
+  limit: number,
+  offset: number,
+) {
+  return base
+    .join(
+      CheckListItemFieldsProperties.tableName,
+      `${CheckListFieldsProperties.tableName}.id`,
+      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
+    )
+    .leftJoin(
+      CompaniesFieldsProperties.tableName,
+      `${CompaniesFieldsProperties.tableName}.id`,
+      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.company_id}`,
+    )
 
+    .where((builder) => {
+      if (params.byCompany) {
+        builder.where(
+          `${CheckListItemFieldsProperties.company_id}`,
+          params.byCompany,
+        );
+      }
+      if (params.startDate && params.endDate) {
+        builder.whereBetween(
+          `${CheckListItemFieldsProperties.tableName}.created_at`,
+          [params.startDate, params.endDate],
+        );
+      }
+    })
+    .limit(limit)
+    .offset(offset);
+}
 /**
  * Constrói uma consulta SQL com junções relacionadas a perguntas e aplica filtros específicos.
  *

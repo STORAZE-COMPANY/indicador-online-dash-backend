@@ -28,6 +28,7 @@ import {
   updateExpiriesTime,
 } from "./dtos/update-checklist.dto";
 import { CheckListItem } from "./entities/checkListItem.entity";
+import { GroupedCheckList } from "./interfaces/checklist.interface";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -69,6 +70,19 @@ export class ChecklistsController {
     @Query() dto: FindParamsDto,
   ): Promise<CheckListItemFormattedList[]> {
     return this.service.findPaginatedByParams({
+      ...dto,
+      byCompany: dto.byCompany && Number(dto.byCompany),
+    });
+  }
+
+  @Get("checkListWithCompanies")
+  @ApiOkResponse({
+    type: [GroupedCheckList],
+  })
+  findCheckListPaginatedByParams(
+    @Query() dto: FindParamsDto,
+  ): Promise<GroupedCheckList[]> {
+    return this.service.findPaginatedCheckList({
       ...dto,
       byCompany: dto.byCompany && Number(dto.byCompany),
     });

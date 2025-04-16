@@ -7,6 +7,7 @@ import { CheckListFieldsProperties } from "./enums/checkList.enum";
 
 import {
   buildCheckListItemQueryWithJoins,
+  buildCheckListQueryWithJoins,
   buildCheckListWithEmployeeRelatedQueryWithJoins,
   buildQuestionsRelatedQueryWithJoins,
   handleBuildChoicesToInsert,
@@ -33,6 +34,7 @@ import {
 import { Question } from "@modules/questions/entities/question.entity";
 import { Anomalies, BaseMessages } from "@shared/enums";
 import { CategoriesFieldsProperties } from "@modules/categories/enums";
+import { GroupedCheckList } from "./interfaces/checklist.interface";
 
 @Injectable()
 export class ChecklistsService {
@@ -75,7 +77,83 @@ export class ChecklistsService {
       return created;
     });
   }
+  async findPaginatedCheckList({
+    byCompany,
+    endDate,
+    startDate,
+    limit,
+    page,
+  }: FindParamsDto): Promise<GroupedCheckList[]> {
+    const offset = (Number(page) - 1) * Number(limit);
 
+    const checkListItemList: CheckListItemFormattedList[] =
+      await buildCheckListQueryWithJoins(
+        db<CheckList>(CheckListFieldsProperties.tableName),
+        { byCompany, startDate, endDate },
+        Number(limit),
+        offset,
+      ).select([
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.categories_id}`,
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.company_id}`,
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.created_at}`,
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.updated_at}`,
+
+        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.id} as checklistItemId`,
+        `${CompaniesFieldsProperties.tableName}.name as companyName`,
+        `${CompaniesFieldsProperties.tableName}.id as companyId`,
+        `${CheckListFieldsProperties.tableName}.name as checklistName`,
+      ]);
+
+    const questionsRelated: (Question & { anomaly: Anomalies | null })[] =
+      await buildQuestionsRelatedQueryWithJoins(
+        db<Question>(QuestionFieldsProperties.tableName),
+        checkListItemList.map((item) => item.checklistItemId),
+      ).select([
+        `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
+        `${ChoicesFieldsProperties.tableName}.${ChoicesFieldsProperties.anomaly}`,
+      ]);
+
+    const checkListItemWithQuestions = checkListItemList.map((item) => {
+      const questions = questionsRelated.filter(
+        (question) => question.checkListItem_id === item.checklistItemId,
+      );
+
+      return {
+        ...item,
+        hasAnomalies: questions.some((question) => ({
+          anomaly: question.anomaly !== null ? true : false,
+        })),
+      };
+    });
+
+    const grouped = checkListItemWithQuestions.reduce(
+      (acc: Record<string, GroupedCheckList>, row) => {
+        const checklistId = row.checkList_id;
+
+        if (!acc[checklistId]) {
+          acc[checklistId] = {
+            id: checklistId,
+            name: row.checklistName,
+            categories_id: row.categories_id,
+            hasAnomalies: row.hasAnomalies,
+            companies: [],
+          };
+        }
+
+        acc[checklistId].companies.push({
+          id: row.companyId,
+          name: row.companyName,
+          checklistItemId: row.checklistItemId,
+        });
+
+        return acc;
+      },
+      {} as Record<string, GroupedCheckList>,
+    );
+
+    return Object.values(grouped);
+  }
   async findPaginatedByParams({
     byCompany,
     endDate,
