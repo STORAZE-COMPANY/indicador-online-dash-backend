@@ -38,8 +38,8 @@ import {
   buildAnswerListWithCheckListQueryWithJoins,
   buildAnswerOnAnomalyResolutionQuery,
   buildEmployeesAnomalyResolutionQuery,
-  buildIaAnswer,
   buildMultipleChoiceAnswersQuery,
+  formatIaAnswer,
 } from "./auxiliar";
 import { AnswersWithQuestions } from "./dtos/responses.dto";
 import { EmployeesFields } from "@modules/employees/enums";
@@ -123,13 +123,17 @@ export class AnswersService {
         },
       ],
     });
+    const anomalyResponse = formatIaAnswer(iaAnswer);
 
     const [answer] = await db<Answers>(AnswerFieldsProperties.tableName)
       .insert({
         employee_id: Number(employee_id),
         question_id,
         imageAnswer: url,
-        anomalyStatus: buildIaAnswer({ iaAnswer }),
+        anomalyStatus:
+          anomalyResponse === BaseMessages.noAnomaly
+            ? undefined
+            : anomalyResponse,
       })
       .returning("*");
 
@@ -140,7 +144,7 @@ export class AnswersService {
       })
       .returning("*");
 
-    if (buildIaAnswer({ iaAnswer }) !== undefined) {
+    if (anomalyResponse !== BaseMessages.noAnomaly) {
       const employee = await db<Employee>(EmployeesFields.tableName)
         .where({ id: Number(employee_id) })
         .first();
@@ -151,7 +155,10 @@ export class AnswersService {
         to: employee.email,
         subject: smtpMessages.anomalyAlert,
         text: "",
-        html: buildHtmlTemplateForAnomalyAlert(questionExist.question),
+        html: buildHtmlTemplateForAnomalyAlert({
+          questionRelatedToAnomaly: questionExist.question,
+          anomaly: iaAnswer,
+        }),
       });
     }
 
@@ -232,24 +239,17 @@ export class AnswersService {
       ],
     });
 
-    if (
-      iaAnswer !== Anomalies.anomaly &&
-      iaAnswer !== Anomalies.anomaly_restricted &&
-      iaAnswer !== BaseMessages.noAnomaly
-    )
-      throw new UnprocessableEntityException(
-        BaseMessages.iaResponseNotExpected,
-        iaAnswer,
-      );
+    const anomalyResponse = formatIaAnswer(iaAnswer);
 
     const [answer] = await db<Answers>(AnswerFieldsProperties.tableName)
       .insert({
         employee_id: Number(employee_id),
         question_id,
-
         textAnswer,
         anomalyStatus:
-          iaAnswer !== BaseMessages.noAnomaly ? iaAnswer : undefined,
+          anomalyResponse === BaseMessages.noAnomaly
+            ? undefined
+            : anomalyResponse,
       })
       .returning("*");
 
@@ -270,7 +270,7 @@ export class AnswersService {
     description,
     image,
   }: CreateAnomalyResolutionDTO): Promise<AnomalyResolution> {
-    const answerExist: Answers & { question: string } =
+    const answerExist: Answers & { question: string; anomalyRelated: string } =
       await buildAnswerOnAnomalyResolutionQuery({
         base: db<Answers>(AnswerFieldsProperties.tableName),
         answer_id,
@@ -279,10 +279,11 @@ export class AnswersService {
         .select(
           `${AnswerFieldsProperties.tableName}.*`,
           `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.question} as question`,
+          `${IaPromptAnswerFieldsProperties.tableName}.${IaPromptAnswerFieldsProperties.textAnswer} as anomalyRelated`,
         );
 
     if (!answerExist) throw new NotFoundException(BaseMessages.notFound);
-    console.log("answerExist", answerExist);
+
     let imageUrl: string | undefined = undefined;
 
     if (image) {
@@ -293,7 +294,6 @@ export class AnswersService {
       });
       imageUrl = url;
     }
-    console.log("imageUrl", imageUrl);
     const [resolution] = await db<AnomalyResolution>(
       AnomalyResolutionFieldsProperties.tableName,
     )
@@ -314,7 +314,6 @@ export class AnswersService {
       base: db<Employee>(EmployeesFields.tableName),
       companyId: employee.company_id,
     }).select(`${EmployeesFields.tableName}.*`);
-    console.log("employees", employees);
 
     for (const employee of employees) {
       await sendEmail({
@@ -323,7 +322,7 @@ export class AnswersService {
         text: "",
         html: buildResolutionAlertHtml({
           employeeName: employee.name,
-          questionRelatedToAnomaly: answerExist.question,
+          questionRelatedToAnomaly: answerExist.anomalyRelated,
         }),
       });
     }

@@ -11,9 +11,13 @@ export const buildHtmlTemplateForPassword = (senha: string) => `
 </div>
 `;
 
-export const buildHtmlTemplateForAnomalyAlert = (
-  questionRelatedToAnomaly: string,
-) => `
+export const buildHtmlTemplateForAnomalyAlert = ({
+  anomaly,
+  questionRelatedToAnomaly,
+}: {
+  questionRelatedToAnomaly: string;
+  anomaly: string;
+}) => `
 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; text-align: center;">
   <img src=${indicadorOnlineLogo} alt="Indicador Online" style="width: 150px; margin-bottom: 20px;" />
   <h2 style="color: #d9534f;">⚠️ Alerta de Anomalia</h2>
@@ -22,6 +26,12 @@ export const buildHtmlTemplateForAnomalyAlert = (
   </p>
   <blockquote style="font-size: 16px; font-style: italic; color: #555; margin: 20px auto; max-width: 500px;">
     "${questionRelatedToAnomaly}"
+  </blockquote>
+    <p style="font-size: 16px;">
+    Anomalia:
+  </p>
+  <blockquote style="font-size: 16px; font-style: italic; color: #555; margin: 20px auto; max-width: 500px;">
+    "${anomaly}"
   </blockquote>
   <p style="font-size: 14px; color: #666;">
     Recomendamos revisar sua resposta e, se necessário, entrar em contato com o suporte.

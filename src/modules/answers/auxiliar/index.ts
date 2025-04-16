@@ -1,14 +1,19 @@
 import { EmployeesFields } from "@modules/employees/enums";
 import { Knex } from "knex";
-import { AnswerChoiceFieldsProperties, AnswerFieldsProperties } from "../enums";
+import {
+  AnswerChoiceFieldsProperties,
+  AnswerFieldsProperties,
+  IaPromptAnswerFieldsProperties,
+} from "../enums";
 import { CompaniesFieldsProperties } from "@modules/companies/enums";
-import { Anomalies, Role } from "@shared/enums";
+import { Anomalies, BaseMessages, Role } from "@shared/enums";
 import {
   ChoicesFieldsProperties,
   QuestionFieldsProperties,
 } from "@modules/questions/enums";
 import { RolesFieldsProperties } from "@modules/roles/enums";
 import { Answers } from "../entities/asnwers.entity";
+import { UnprocessableEntityException } from "@nestjs/common";
 
 export function buildAnswerListWithCheckListQueryWithJoins({
   base,
@@ -106,6 +111,26 @@ export function buildIaAnswer({
   return undefined;
 }
 
+export function formatIaAnswer(iaAnswer: string) {
+  const match = iaAnswer.match(/(ANOMALIA_RESTRITIVA|ANOMALIA):/);
+
+  const anomalyResponse = match
+    ? (match[1] as Anomalies)
+    : BaseMessages.noAnomaly;
+  if (anomalyResponse) {
+    if (
+      anomalyResponse !== Anomalies.anomaly &&
+      anomalyResponse !== Anomalies.anomaly_restricted &&
+      anomalyResponse !== BaseMessages.noAnomaly
+    )
+      throw new UnprocessableEntityException(
+        BaseMessages.iaResponseNotExpected,
+        iaAnswer,
+      );
+  }
+  return anomalyResponse;
+}
+
 export function buildAnswerOnAnomalyResolutionQuery({
   base,
   answer_id,
@@ -118,6 +143,11 @@ export function buildAnswerOnAnomalyResolutionQuery({
       QuestionFieldsProperties.tableName,
       `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.question_id}`,
       `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
+    )
+    .join(
+      IaPromptAnswerFieldsProperties.tableName,
+      `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.id}`,
+      `${IaPromptAnswerFieldsProperties.tableName}.${IaPromptAnswerFieldsProperties.answer_id}`,
     )
 
     .where(
