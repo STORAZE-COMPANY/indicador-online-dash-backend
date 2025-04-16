@@ -17,7 +17,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { CheckList } from "./entities/checklist.entity";
+import { CheckList, Question } from "./entities/checklist.entity";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 import {
   CheckListForSpecificEmployee,
@@ -30,7 +30,11 @@ import {
 } from "./dtos/update-checklist.dto";
 import { CheckListItem } from "./entities/checkListItem.entity";
 import { GroupedCheckList } from "./interfaces/checklist.interface";
-import { BatchConnectCompanyToChecklistDto } from "./dtos/batch.dto";
+import {
+  batchConnectCheckListQuestionsToEmployeeDto,
+  BatchConnectCompanyToChecklistDto,
+} from "./dtos/batch.dto";
+import { BaseMessages } from "@shared/enums";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -145,5 +149,19 @@ export class ChecklistsController {
   })
   connectCheckListToCompany(@Body() dto: BatchConnectCompanyToChecklistDto[]) {
     return this.service.updateCompanyRelatedBatch(dto);
+  }
+
+  @Put("relate-employee-to-checklist")
+  @ApiNotFoundResponse({
+    description: BaseMessages.notFound,
+    type: NotFoundException,
+  })
+  @ApiOkResponse({
+    type: Question,
+  })
+  connectEmployeeToCheckList(
+    @Body() dto: batchConnectCheckListQuestionsToEmployeeDto,
+  ) {
+    return this.service.batchConnectCheckListQuestionsToEmployee(dto);
   }
 }

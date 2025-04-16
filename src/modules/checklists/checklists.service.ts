@@ -35,7 +35,10 @@ import { Question } from "@modules/questions/entities/question.entity";
 import { Anomalies, BaseMessages } from "@shared/enums";
 import { CategoriesFieldsProperties } from "@modules/categories/enums";
 import { GroupedCheckList } from "./interfaces/checklist.interface";
-import { BatchConnectCompanyToChecklistDto } from "./dtos/batch.dto";
+import {
+  batchConnectCheckListQuestionsToEmployeeDto,
+  BatchConnectCompanyToChecklistDto,
+} from "./dtos/batch.dto";
 
 @Injectable()
 export class ChecklistsService {
@@ -291,5 +294,30 @@ export class ChecklistsService {
         );
       }),
     );
+  }
+
+  async batchConnectCheckListQuestionsToEmployee({
+    checklistId,
+    employee_id,
+  }: batchConnectCheckListQuestionsToEmployeeDto) {
+    const checkListItem = await db<CheckListItem>(
+      CheckListItemFieldsProperties.tableName,
+    ).where({ checkList_id: checklistId });
+
+    if (!checkListItem) throw new NotFoundException(BaseMessages.notFound);
+
+    const [questionsUpdated] = await db<Question>(
+      QuestionFieldsProperties.tableName,
+    )
+      .whereIn(
+        `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
+        checkListItem.map((item) => item.id),
+      )
+      .update({
+        employee_id,
+      })
+      .returning("*");
+
+    return questionsUpdated;
   }
 }
