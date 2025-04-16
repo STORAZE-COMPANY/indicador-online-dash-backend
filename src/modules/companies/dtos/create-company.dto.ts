@@ -37,11 +37,4 @@ export class CreateCompanyDto {
   @ApiProperty({ description: "Email da empresa" })
   @IsEmail()
   email: string;
-
-  @ApiProperty({
-    example: "1",
-    description: "ID do nível de acesso associada à empresa",
-  })
-  @IsString()
-  roleId: string;
 }

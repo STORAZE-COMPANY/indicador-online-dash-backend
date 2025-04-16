@@ -46,12 +46,12 @@ export class CompaniesService {
       .insert({
         name: dto.name,
         cnpj: dto.cnpj,
-        role_id: dto.roleId,
+
         isActive: dto.isActive,
         password: harshPassword,
         email: dto.email,
       })
-      .returning(["id", "cnpj", "email", "name", "isActive", "role_id"]);
+      .returning(["id", "cnpj", "email", "name", "isActive"]);
     if (created) {
       await sendEmail({
         to: dto.email,
@@ -103,7 +103,7 @@ export class CompaniesService {
         ...company,
       })
       .where({ id })
-      .returning(["id", "cnpj", "email", "name", "isActive", "role_id"]);
+      .returning(["id", "cnpj", "email", "name", "isActive"]);
 
     return updated;
   }

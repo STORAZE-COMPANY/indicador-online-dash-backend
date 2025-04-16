@@ -44,11 +44,6 @@ export class Company {
   updated_at?: Date;
 
   @ApiProperty({
-    description: CompaniesFieldsProperties.role,
-  })
-  role_id: string;
-
-  @ApiProperty({
     description: CompaniesFieldsProperties.password,
   })
   password: string;

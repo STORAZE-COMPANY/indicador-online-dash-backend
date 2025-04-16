@@ -7,7 +7,6 @@ import {
   IsEmail,
   IsNumber,
   IsOptional,
-  IsString,
   Matches,
 } from "class-validator";
 
@@ -42,12 +41,4 @@ export class UpdateCompanyDto {
   @IsEmail()
   @IsOptional()
   email?: string;
-
-  @ApiProperty({
-    example: "1",
-    description: "ID do nível de acesso associada à empresa",
-  })
-  @IsOptional()
-  @IsString()
-  roleId?: string;
 }

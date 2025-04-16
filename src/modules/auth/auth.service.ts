@@ -9,7 +9,6 @@ import db from "database/connection";
 import { AuthResponseMessages, TokenProperties } from "./enums";
 import { AuthResponse, UserAuth } from "./interface";
 import { Employee } from "@modules/employees/entities/employee.entity";
-import { Company } from "@modules/companies/entities/company.entity";
 import {
   buildUserAuth,
   generateJwtToken,
@@ -142,9 +141,9 @@ export class AuthService {
     email: string,
     isLoginOnMobile?: boolean,
   ): Promise<UserAuth & { password: string }> {
-    let userAuth: (UserAuth & { password: string }) | null = null;
-
-    userAuth = await db<Employee>("employees")
+    const userAuth: UserAuth & { password: string } = await db<Employee>(
+      "employees",
+    )
       .join("roles", "employees.role_id", "roles.id")
       .where(
         generateWhereBuilder({
@@ -155,20 +154,6 @@ export class AuthService {
       )
       .first()
       .select(generateSelect("employees"));
-
-    if (!userAuth) {
-      userAuth = await db<Company>("companies")
-        .join("roles", "companies.role_id", "roles.id")
-        .where(
-          generateWhereBuilder({
-            email,
-            entityName: "companies",
-            isLoginOnMobile,
-          }),
-        )
-        .first()
-        .select(generateSelect("companies"));
-    }
 
     if (!userAuth)
       throw new NotFoundException(AuthResponseMessages.userNotFound);

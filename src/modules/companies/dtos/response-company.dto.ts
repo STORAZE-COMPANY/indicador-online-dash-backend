@@ -43,11 +43,6 @@ export class CompanyResponse {
     required: false,
   })
   updated_at?: Date;
-
-  @ApiProperty({
-    description: CompaniesFieldsProperties.role,
-  })
-  role_id: string;
 }
 
 export class FindCompanySettings extends CompanySettings {
