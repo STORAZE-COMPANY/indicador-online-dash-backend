@@ -38,7 +38,7 @@ import {
 } from "./dtos/create-answer.dto";
 import { QuestionId } from "./dtos/find-params.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { schema } from "./auxiliar/constants/swagger";
+import { schema, schemaAnomalyResolution } from "./auxiliar/constants/swagger";
 import { AnswersWithQuestions } from "./dtos/responses.dto";
 import { AnomalyResolution } from "./entities/answersResolution.entity";
 import { UpdateAnomalyResolutionDTO } from "./dtos/update-answer.dto";
@@ -176,10 +176,16 @@ export class AnswersController {
     type: NotFoundException,
   })
   @UseGuards(JwtAuthGuard)
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("image"))
+  @ApiBody({
+    schema: schemaAnomalyResolution,
+  })
   async createAnomalyResolution(
     @Body() dto: CreateAnomalyResolutionDTO,
+    @UploadedFile() image?: Express.Multer.File,
   ): Promise<AnomalyResolution> {
-    return this.service.createResolutionForAnomaly({ ...dto });
+    return this.service.createResolutionForAnomaly({ ...dto, image });
   }
 
   @Put(AnswerRoutes.updateAnomalyResolution)

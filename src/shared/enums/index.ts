@@ -29,6 +29,8 @@ export enum smtpMessages {
   emailNotSent = "Falha ao enviar email",
   welcome = "Bem-vindo!",
   yourPassword = "Sua senha é: ",
+
+  anomalyAlert = "Alerta de Anomalia",
 }
 
 export enum BaseMessagesValidations {

@@ -18,3 +18,19 @@ export const schema: SchemaObject | ReferenceObject = {
     },
   },
 };
+
+export const schemaAnomalyResolution: SchemaObject | ReferenceObject = {
+  type: "object",
+  properties: {
+    image: {
+      type: "string",
+      format: "binary",
+    },
+    description: {
+      type: "string",
+    },
+    answer_id: {
+      type: "string",
+    },
+  },
+};

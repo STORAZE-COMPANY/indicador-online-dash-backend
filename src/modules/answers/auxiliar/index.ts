@@ -2,11 +2,13 @@ import { EmployeesFields } from "@modules/employees/enums";
 import { Knex } from "knex";
 import { AnswerChoiceFieldsProperties, AnswerFieldsProperties } from "../enums";
 import { CompaniesFieldsProperties } from "@modules/companies/enums";
-import { Anomalies } from "@shared/enums";
+import { Anomalies, Role } from "@shared/enums";
 import {
   ChoicesFieldsProperties,
   QuestionFieldsProperties,
 } from "@modules/questions/enums";
+import { RolesFieldsProperties } from "@modules/roles/enums";
+import { Answers } from "../entities/asnwers.entity";
 
 export function buildAnswerListWithCheckListQueryWithJoins({
   base,
@@ -102,4 +104,47 @@ export function buildIaAnswer({
   }
 
   return undefined;
+}
+
+export function buildAnswerOnAnomalyResolutionQuery({
+  base,
+  answer_id,
+}: {
+  answer_id: string;
+  base: Knex.QueryBuilder<Answers>;
+}): Knex.QueryBuilder {
+  return base
+    .join(
+      QuestionFieldsProperties.tableName,
+      `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.question_id}`,
+      `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
+    )
+
+    .where(
+      `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.id}`,
+      answer_id,
+    );
+}
+
+export function buildEmployeesAnomalyResolutionQuery({
+  base,
+  companyId,
+}: {
+  base: Knex.QueryBuilder;
+  companyId: number;
+}): Knex.QueryBuilder {
+  return base
+    .join(
+      CompaniesFieldsProperties.tableName,
+      `${EmployeesFields.tableName}.${EmployeesFields.company_id}`,
+      `${CompaniesFieldsProperties.tableName}.id`,
+    )
+    .join(
+      RolesFieldsProperties.tableName,
+      `${EmployeesFields.tableName}.${EmployeesFields.roleId}`,
+      `${RolesFieldsProperties.tableName}.id`,
+    )
+    .where(`${CompaniesFieldsProperties.tableName}.id`, companyId)
+    .andWhere(`${RolesFieldsProperties.tableName}.name`, Role.superAdmin)
+    .orWhere(`${RolesFieldsProperties.tableName}.name`, Role.admin);
 }

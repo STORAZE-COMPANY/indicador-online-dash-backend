@@ -59,13 +59,9 @@ export class CreateAnomalyResolutionDTO {
   @IsOptional()
   description?: string;
 
-  @ApiProperty({
-    example: "This is a description of the anomaly resolution.",
-    description: "Description of the anomaly resolution",
-  })
-  @IsNonBlankString({ isOptional: true })
+  @ApiProperty({ type: "string", format: "binary" })
   @IsOptional()
-  imageUrl?: string;
+  image?: Express.Multer.File;
 
   @ApiProperty({
     example: "e5b7f1c3-2d4b-4c8a-9c2b-3f6d5e7a8b9c",

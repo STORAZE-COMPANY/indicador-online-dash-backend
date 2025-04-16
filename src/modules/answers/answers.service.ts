@@ -28,7 +28,7 @@ import {
   QuestionFieldsProperties,
   QuestionType,
 } from "@modules/questions/enums";
-import { Anomalies, BaseMessages } from "@shared/enums";
+import { Anomalies, BaseMessages, smtpMessages } from "@shared/enums";
 import { Question } from "@modules/questions/entities/question.entity";
 import { OpenIA } from "api/openIa/enum";
 import { choices } from "@modules/questions/dtos/choices.dto";
@@ -36,6 +36,8 @@ import { choices } from "@modules/questions/dtos/choices.dto";
 import { IaPromptAnswer } from "./entities/iaPromptAnswer.entity";
 import {
   buildAnswerListWithCheckListQueryWithJoins,
+  buildAnswerOnAnomalyResolutionQuery,
+  buildEmployeesAnomalyResolutionQuery,
   buildIaAnswer,
   buildMultipleChoiceAnswersQuery,
 } from "./auxiliar";
@@ -50,6 +52,12 @@ import {
 } from "./interfaces";
 import { AnomalyResolution } from "./entities/answersResolution.entity";
 import { UpdateAnomalyResolutionDTO } from "./dtos/update-answer.dto";
+import { Employee } from "@modules/employees/entities/employee.entity";
+import { sendEmail } from "@shared/smtp";
+import {
+  buildHtmlTemplateForAnomalyAlert,
+  buildResolutionAlertHtml,
+} from "@shared/smtp/aux/html-template";
 
 @Injectable()
 export class AnswersService {
@@ -131,6 +139,21 @@ export class AnswersService {
         textAnswer: iaAnswer,
       })
       .returning("*");
+
+    if (buildIaAnswer({ iaAnswer }) !== undefined) {
+      const employee = await db<Employee>(EmployeesFields.tableName)
+        .where({ id: Number(employee_id) })
+        .first();
+
+      if (!employee) throw new NotFoundException(BaseMessages.notFound);
+
+      await sendEmail({
+        to: employee.email,
+        subject: smtpMessages.anomalyAlert,
+        text: "",
+        html: buildHtmlTemplateForAnomalyAlert(questionExist.question),
+      });
+    }
 
     return {
       ...answer,
@@ -245,14 +268,32 @@ export class AnswersService {
   async createResolutionForAnomaly({
     answer_id,
     description,
-    imageUrl,
+    image,
   }: CreateAnomalyResolutionDTO): Promise<AnomalyResolution> {
-    const [answerExist] = await db<Answers>(AnswerFieldsProperties.tableName)
-      .where({ id: answer_id })
-      .returning("*");
+    const answerExist: Answers & { question: string } =
+      await buildAnswerOnAnomalyResolutionQuery({
+        base: db<Answers>(AnswerFieldsProperties.tableName),
+        answer_id,
+      })
+        .first()
+        .select(
+          `${AnswerFieldsProperties.tableName}.*`,
+          `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.question} as question`,
+        );
 
     if (!answerExist) throw new NotFoundException(BaseMessages.notFound);
+    console.log("answerExist", answerExist);
+    let imageUrl: string | undefined = undefined;
 
+    if (image) {
+      const { url } = await uploadImage({
+        bucket: s3Buckets.INDICADOR_ONLINE_IMAGES,
+        file: image,
+        itemId: uuidv4(),
+      });
+      imageUrl = url;
+    }
+    console.log("imageUrl", imageUrl);
     const [resolution] = await db<AnomalyResolution>(
       AnomalyResolutionFieldsProperties.tableName,
     )
@@ -262,6 +303,30 @@ export class AnswersService {
         imageUrl,
       })
       .returning("*");
+
+    const [employee] = await db<Employee>(EmployeesFields.tableName)
+      .where({
+        id: answerExist.employee_id,
+      })
+      .returning("*");
+
+    const employees: Employee[] = await buildEmployeesAnomalyResolutionQuery({
+      base: db<Employee>(EmployeesFields.tableName),
+      companyId: employee.company_id,
+    }).select(`${EmployeesFields.tableName}.*`);
+    console.log("employees", employees);
+
+    for (const employee of employees) {
+      await sendEmail({
+        to: employee.email,
+        subject: smtpMessages.anomalyAlert,
+        text: "",
+        html: buildResolutionAlertHtml({
+          employeeName: employee.name,
+          questionRelatedToAnomaly: answerExist.question,
+        }),
+      });
+    }
 
     return resolution;
   }
