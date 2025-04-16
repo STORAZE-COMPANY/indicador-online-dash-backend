@@ -31,6 +31,8 @@ export enum smtpMessages {
   yourPassword = "Sua senha é: ",
 
   anomalyAlert = "Alerta de Anomalia",
+
+  questionAssigned = "Pergunta atribuída",
 }
 
 export enum BaseMessagesValidations {

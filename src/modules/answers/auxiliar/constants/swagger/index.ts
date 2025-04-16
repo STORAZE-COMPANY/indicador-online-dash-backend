@@ -14,7 +14,7 @@ export const schema: SchemaObject | ReferenceObject = {
       type: "string",
     },
     employee_id: {
-      type: "string",
+      type: "number",
     },
   },
 };

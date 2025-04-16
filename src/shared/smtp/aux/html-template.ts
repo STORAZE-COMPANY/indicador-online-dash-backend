@@ -69,3 +69,32 @@ export const buildResolutionAlertHtml = ({
     <p style="font-size: 12px; color: #aaa;">A melhor direção para se tornar Líder.</p>
   </div>
 `;
+export const buildQuestionAssignedHtml = ({
+  checkListName,
+  questionName,
+}: {
+  checkListName: string;
+  questionName: string;
+}) => `
+  <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; text-align: center;">
+    <img src=${indicadorOnlineLogo} alt="Indicador Online" style="width: 150px; margin-bottom: 20px;" />
+    
+    <h2 style="color: #1da9d3;">📋 Nova Questão Atribuída</h2>
+    
+    <p style="font-size: 16px;">
+      Uma nova questão foi atribuída a você no checklist <strong>"${checkListName}"</strong>.
+    </p>
+    
+    <blockquote style="font-size: 16px; font-style: italic; color: #555; margin: 20px auto; max-width: 500px;">
+      "${questionName}"
+    </blockquote>
+    
+    <p style="font-size: 14px; color: #666;">
+      Acesse a plataforma para responder à questão e acompanhar seu progresso.
+    </p>
+    
+    <hr style="margin: 30px 0;" />
+    
+    <p style="font-size: 12px; color: #aaa;">A melhor direção para se tornar Líder.</p>
+  </div>
+`;

@@ -89,28 +89,6 @@ export function buildMultipleChoiceAnswersQuery({
     });
 }
 
-/**
- * Constrói uma resposta de IA com base no tipo de anomalia fornecido.
- *
- * @param iaAnswer - Objeto contendo a resposta da IA, que pode ser do tipo `Anomalies`.
- * @returns Retorna o tipo de anomalia correspondente (`Anomalies.anomaly` ou `Anomalies.anomaly_restricted`)
- *          ou `undefined` caso não seja uma anomalia.
- */
-export function buildIaAnswer({
-  iaAnswer,
-}: {
-  iaAnswer: Anomalies;
-}): Anomalies | undefined {
-  if (iaAnswer === Anomalies.anomaly) {
-    return Anomalies.anomaly;
-  }
-  if (iaAnswer === Anomalies.anomaly_restricted) {
-    return Anomalies.anomaly_restricted;
-  }
-
-  return undefined;
-}
-
 export function formatIaAnswer(iaAnswer: string) {
   const match = iaAnswer.match(/(ANOMALIA_RESTRITIVA|ANOMALIA):/);
 
@@ -177,4 +155,21 @@ export function buildEmployeesAnomalyResolutionQuery({
     .where(`${CompaniesFieldsProperties.tableName}.id`, companyId)
     .andWhere(`${RolesFieldsProperties.tableName}.name`, Role.superAdmin)
     .orWhere(`${RolesFieldsProperties.tableName}.name`, Role.admin);
+}
+
+export function buildMultipleQuestionAnswerQuery({
+  base,
+  choice_id,
+}: {
+  base: Knex.QueryBuilder;
+  choice_id: string;
+}) {
+  return base
+    .join(
+      QuestionFieldsProperties.tableName,
+      `${ChoicesFieldsProperties.tableName}.question_id`,
+      `${QuestionFieldsProperties.tableName}.id`,
+    )
+    .where(`${ChoicesFieldsProperties.tableName}.id`, choice_id)
+    .first();
 }

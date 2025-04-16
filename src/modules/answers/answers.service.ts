@@ -39,6 +39,7 @@ import {
   buildAnswerOnAnomalyResolutionQuery,
   buildEmployeesAnomalyResolutionQuery,
   buildMultipleChoiceAnswersQuery,
+  buildMultipleQuestionAnswerQuery,
   formatIaAnswer,
 } from "./auxiliar";
 import { AnswersWithQuestions } from "./dtos/responses.dto";
@@ -171,9 +172,15 @@ export class AnswersService {
     choice_id,
     employee_id,
   }: CreateAnswerChoice): Promise<AnswerChoice> {
-    const [choiceExist] = await db<choices>(ChoicesFieldsProperties.tableName)
-      .where({ id: choice_id })
-      .returning("*");
+    const choiceExist: choices & {
+      question: string;
+    } = await buildMultipleQuestionAnswerQuery({
+      base: db<choices>(ChoicesFieldsProperties.tableName),
+      choice_id,
+    }).select(
+      `${ChoicesFieldsProperties.tableName}.*`,
+      `${QuestionFieldsProperties.tableName}.question as question`,
+    );
     if (!choiceExist) throw new NotFoundException(BaseMessages.notFound);
 
     const alreadyAnswered = await db<AnswerChoice>(
@@ -195,12 +202,27 @@ export class AnswersService {
       })
       .returning("*");
 
+    if (choiceExist.anomalyStatus !== null) {
+      const [employee] = await db<Employee>(EmployeesFields.tableName)
+        .where({ id: employee_id })
+        .returning("*");
+      if (!employee) throw new NotFoundException(BaseMessages.notFound);
+
+      await sendEmail({
+        to: employee.email,
+        subject: smtpMessages.anomalyAlert,
+        text: "",
+        html: buildHtmlTemplateForAnomalyAlert({
+          questionRelatedToAnomaly: choiceExist.question,
+          anomaly: choiceExist.anomalyStatus,
+        }),
+      });
+    }
     return answer;
   }
   async createAnswerForSingleQuestion({
     employee_id,
     question_id,
-
     textAnswer,
   }: CreateAnswerDto): Promise<AnswerResponse> {
     const [questionExist] = await db<Question>(
