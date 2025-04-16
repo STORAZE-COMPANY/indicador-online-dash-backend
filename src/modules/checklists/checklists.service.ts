@@ -35,6 +35,7 @@ import { Question } from "@modules/questions/entities/question.entity";
 import { Anomalies, BaseMessages } from "@shared/enums";
 import { CategoriesFieldsProperties } from "@modules/categories/enums";
 import { GroupedCheckList } from "./interfaces/checklist.interface";
+import { BatchConnectCompanyToChecklistDto } from "./dtos/batch.dto";
 
 @Injectable()
 export class ChecklistsService {
@@ -275,5 +276,20 @@ export class ChecklistsService {
       .returning("*");
 
     return updated;
+  }
+  async updateCompanyRelatedBatch(
+    params: BatchConnectCompanyToChecklistDto[],
+  ): Promise<void> {
+    await Promise.all(
+      params.map(async ({ checklistId, companyId, categories_id }) => {
+        await db<CheckListItem>(CheckListItemFieldsProperties.tableName).insert(
+          {
+            company_id: companyId,
+            checkList_id: checklistId,
+            categories_id,
+          },
+        );
+      }),
+    );
   }
 }

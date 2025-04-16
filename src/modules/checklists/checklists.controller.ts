@@ -11,6 +11,7 @@ import {
 import { ChecklistsService } from "./checklists.service";
 import { CreateCheckListDto } from "./dtos/create-checklist.dto";
 import {
+  ApiBody,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -29,6 +30,7 @@ import {
 } from "./dtos/update-checklist.dto";
 import { CheckListItem } from "./entities/checkListItem.entity";
 import { GroupedCheckList } from "./interfaces/checklist.interface";
+import { BatchConnectCompanyToChecklistDto } from "./dtos/batch.dto";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -135,5 +137,13 @@ export class ChecklistsController {
       checkListId: dto.checkListId,
       images_expiries_in: dto.imagesExpiriesTime,
     });
+  }
+
+  @Post("connect-checklist-company")
+  @ApiBody({
+    type: [BatchConnectCompanyToChecklistDto],
+  })
+  connectCheckListToCompany(@Body() dto: BatchConnectCompanyToChecklistDto[]) {
+    return this.service.updateCompanyRelatedBatch(dto);
   }
 }
