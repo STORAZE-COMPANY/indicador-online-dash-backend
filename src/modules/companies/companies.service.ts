@@ -144,7 +144,11 @@ export class CompaniesService {
 
   async remove(id: number): Promise<void> {
     await this.findOne(id);
-    await db("companies").where({ id }).del();
+    await db("companies")
+      .update({
+        isActive: false,
+      })
+      .where({ id });
   }
   generateRandomCode = () => {
     return Math.random().toString().slice(2, 10);

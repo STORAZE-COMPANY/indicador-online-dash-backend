@@ -74,8 +74,8 @@ export function generateWhereBuilder({
 }) {
   return (builder: Knex.QueryBuilder<SelectByWhereAuth>) => {
     builder
-      .join("roles", `${entityName}.role_id`, "roles.id")
-      .where(`${entityName}.email`, email);
+      .where(`${entityName}.email`, email)
+      .andWhere(`companies.isActive`, true);
     if (!isLoginOnMobile) {
       builder.andWhereNot("roles.name", Role.user);
     }

@@ -145,6 +145,7 @@ export class AuthService {
       "employees",
     )
       .join("roles", "employees.role_id", "roles.id")
+      .join("companies", "employees.company_id", "companies.id")
       .where(
         generateWhereBuilder({
           email,
