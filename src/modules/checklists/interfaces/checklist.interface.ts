@@ -15,6 +15,15 @@ class Company {
     description: "ID do checklist associado à empresa",
   })
   checklistItemId: string;
+  @ApiProperty({
+    description: "ID da categoria do checklist",
+  })
+  categories_id: string;
+
+  @ApiProperty({
+    description: "Indica se o checklist possui anomalias",
+  })
+  hasAnomalies: boolean;
 }
 
 export class GroupedCheckList {
@@ -28,15 +37,6 @@ export class GroupedCheckList {
   })
   name: string;
 
-  @ApiProperty({
-    description: "ID da categoria do checklist",
-  })
-  categories_id: string;
-
-  @ApiProperty({
-    description: "Indica se o checklist possui anomalias",
-  })
-  hasAnomalies: boolean;
   @ApiProperty({
     description: "Lista de empresas associadas ao checklist",
     type: () => [Company],

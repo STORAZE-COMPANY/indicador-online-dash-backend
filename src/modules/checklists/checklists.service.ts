@@ -39,6 +39,10 @@ import {
   batchConnectCheckListQuestionsToEmployeeDto,
   BatchConnectCompanyToChecklistDto,
 } from "./dtos/batch.dto";
+import {
+  UpdateChecklistDto,
+  UpdateChecklistItemDto,
+} from "./dtos/update-checklist.dto";
 
 @Injectable()
 export class ChecklistsService {
@@ -139,8 +143,6 @@ export class ChecklistsService {
           acc[checklistId] = {
             id: checklistId,
             name: row.checklistName,
-            categories_id: row.categories_id,
-            hasAnomalies: row.hasAnomalies,
             companies: [],
           };
         }
@@ -148,7 +150,9 @@ export class ChecklistsService {
         acc[checklistId].companies.push({
           id: row.companyId,
           name: row.companyName,
+          hasAnomalies: row.hasAnomalies,
           checklistItemId: row.checklistItemId,
+          categories_id: row.categories_id,
         });
 
         return acc;
@@ -295,7 +299,6 @@ export class ChecklistsService {
       }),
     );
   }
-
   async batchConnectCheckListQuestionsToEmployee({
     checklistId,
     employee_id,
@@ -319,5 +322,51 @@ export class ChecklistsService {
       .returning("*");
 
     return questionsUpdated;
+  }
+
+  async updateCheckList({ checkListId, name }: UpdateChecklistDto) {
+    const checkList = await db<CheckList>(CheckListFieldsProperties.tableName)
+      .where({ id: checkListId })
+      .first();
+    if (!checkList) throw new NotFoundException(BaseMessages.notFound);
+
+    const [updated] = await db<CheckList>(CheckListFieldsProperties.tableName)
+      .update({
+        name,
+      })
+      .where({
+        id: checkListId,
+      })
+      .returning("*");
+
+    return updated;
+  }
+
+  async updateCheckListItem({
+    categoryId,
+    checkListItemId,
+  }: UpdateChecklistItemDto) {
+    const checkListItem = await db<CheckListItem>(
+      CheckListItemFieldsProperties.tableName,
+    )
+      .where({ id: checkListItemId })
+      .first();
+    if (!checkListItem) throw new NotFoundException(BaseMessages.notFound);
+
+    const [updated] = await db<CheckListItem>(
+      CheckListItemFieldsProperties.tableName,
+    )
+      .where({
+        id: checkListItemId,
+      })
+      .update({
+        categories_id: categoryId,
+        updated_at: new Date(),
+      })
+      .returning("*");
+
+    console.log("updated", updated);
+
+    return updated;
   }
 }
