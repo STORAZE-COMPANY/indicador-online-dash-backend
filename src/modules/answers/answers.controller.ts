@@ -42,6 +42,7 @@ import { schema, schemaAnomalyResolution } from "./auxiliar/constants/swagger";
 import { AnswersWithQuestions } from "./dtos/responses.dto";
 import { AnomalyResolution } from "./entities/answersResolution.entity";
 import { UpdateAnomalyResolutionDTO } from "./dtos/update-answer.dto";
+import { AnswersWithQuestion } from "./dtos/find-answers.dto";
 
 @Controller(AnswerRoutes.baseUrl)
 @ApiTags(AnswerSwaggerInfo.tags)
@@ -50,14 +51,14 @@ export class AnswersController {
 
   @Get()
   @ApiOkResponse({
-    type: [Answers],
+    type: [AnswersWithQuestion],
   })
   @UseGuards(JwtAuthGuard)
   @ApiUnauthorizedResponse({
     description: BaseMessages.unAuthorizedUser,
     type: UnauthorizedException,
   })
-  findList() {
+  findList(): Promise<AnswersWithQuestion[]> {
     return this.service.findAllAnswers();
   }
 

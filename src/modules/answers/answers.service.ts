@@ -59,11 +59,21 @@ import {
   buildHtmlTemplateForAnomalyAlert,
   buildResolutionAlertHtml,
 } from "@shared/smtp/aux/html-template";
+import { AnswersWithQuestion } from "./dtos/find-answers.dto";
 
 @Injectable()
 export class AnswersService {
-  async findAllAnswers(): Promise<Answers[]> {
-    return await db<Answers>(AnswerFieldsProperties.tableName);
+  async findAllAnswers(): Promise<AnswersWithQuestion[]> {
+    return await db<Answers>(AnswerFieldsProperties.tableName)
+      .join(
+        QuestionFieldsProperties.tableName,
+        `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.question_id}`,
+        `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
+      )
+      .select(
+        `${AnswerFieldsProperties.tableName}.*`,
+        `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.question} as question`,
+      );
   }
 
   async findAnswerByQuestionId({
