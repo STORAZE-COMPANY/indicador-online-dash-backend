@@ -49,11 +49,10 @@ export class QuestionsController {
     type: UnauthorizedException,
   })
   findList(
-    @Query() { checkListItemId, limit, page }: FindParamsDto,
+    @Query() { checklistId, limit, page }: FindParamsDto,
   ): Promise<QuestionsWithChoices[]> {
-    return this.service.findQuestionByCheckListItem({
-      checkListItemId,
-
+    return this.service.findQuestionByCheckList({
+      checklistId,
       limit: Number(limit),
       page: Number(page),
     });

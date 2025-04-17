@@ -21,12 +21,12 @@ import { UpdateQuestion } from "./dtos/updateQuestion.dto";
 
 @Injectable()
 export class QuestionsService {
-  async findQuestionByCheckListItem({
-    checkListItemId,
+  async findQuestionByCheckList({
+    checklistId,
     limit,
     page,
   }: {
-    checkListItemId: string;
+    checklistId: string;
     onlyUnanswered?: boolean;
     page: number;
     limit: number;
@@ -35,7 +35,7 @@ export class QuestionsService {
 
     const questions: Question[] = await buildFindQuestionByCheckListQuery({
       Knek: db<Question>(QuestionFieldsProperties.tableName),
-      checkListItemId,
+      checklistId,
     })
       .limit(limit)
       .offset(offset)
@@ -80,13 +80,14 @@ export class QuestionsService {
       QuestionFieldsProperties.tableName,
     )
       .insert({
-        checkListItem_id: question.checkListItem_id,
+        checklist_id: question.checklist_id,
         question: question.question,
         type: question.type,
         isRequired: question.isRequired,
         answerType: question.answerType,
         IAPrompt: question.IAPrompt,
         employee_id: question.employee_id,
+        category_id: question.category_id,
       })
       .returning("*");
 

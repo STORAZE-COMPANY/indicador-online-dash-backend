@@ -5,7 +5,7 @@ import { BasePaginatedParams } from "@shared/enums";
 export class FindParamsDto {
   @ApiProperty()
   @IsString()
-  checkListItemId: string;
+  checklistId: string;
 
   @ApiProperty({ description: BasePaginatedParams.limit })
   @IsString()

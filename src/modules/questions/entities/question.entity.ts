@@ -10,11 +10,13 @@ export class Question {
 
   isRequired: boolean;
 
-  checkListItem_id: string;
+  checklist_id: string;
 
   IAPrompt: string | null;
 
   employee_id: number | null;
+
+  category_id: string;
 
   answerType: QuestionAnswerType;
 }

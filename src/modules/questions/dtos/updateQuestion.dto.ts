@@ -50,6 +50,13 @@ export class UpdateQuestion {
   IAPrompt?: string;
 
   @ApiPropertyOptional({
+    description: QuestionFieldsProperties.categoryId,
+  })
+  @IsNonBlankString({ isOptional: true })
+  @IsOptional()
+  category_id: string;
+
+  @ApiPropertyOptional({
     description: QuestionFieldsProperties.answerType,
   })
   @IsEnum(QuestionAnswerType)

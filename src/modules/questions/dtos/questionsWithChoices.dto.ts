@@ -31,7 +31,7 @@ export class QuestionsWithChoices {
   @ApiProperty({
     description: "ID do checklist",
   })
-  checkListItem_id: string;
+  checklist_id: string;
 
   @ApiProperty({
     description: "Prompt da IA",

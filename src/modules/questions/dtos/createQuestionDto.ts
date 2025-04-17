@@ -28,6 +28,7 @@ export class QuestionDto {
 
   @ApiProperty({
     description: QuestionFieldsProperties.type,
+    enum: QuestionType,
   })
   @IsEnum(QuestionType)
   type: QuestionType;
@@ -47,7 +48,7 @@ export class QuestionDto {
     description: QuestionFieldsProperties.checkList_id,
   })
   @IsNonBlankString({ isOptional: false })
-  checkListItem_id: string;
+  checklist_id: string;
 
   @ApiProperty({
     description: QuestionFieldsProperties.IAPrompt,
@@ -61,6 +62,11 @@ export class QuestionDto {
   @IsEnum(QuestionAnswerType)
   answerType: QuestionAnswerType;
 
+  @ApiProperty({
+    description: QuestionFieldsProperties.categoryId,
+  })
+  @IsNonBlankString({ isOptional: false })
+  category_id: string;
   @ApiPropertyOptional({
     type: [choicesDto],
     description: QuestionFieldsProperties.choices,

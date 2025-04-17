@@ -66,10 +66,10 @@ export function generateWhereByCheckListItemBuilder({
 }
 export function buildFindQuestionByCheckListQuery({
   Knek,
-  checkListItemId,
+  checklistId,
 }: {
   Knek: Knex.QueryBuilder<Question>;
-  checkListItemId: string;
+  checklistId: string;
 }): Knex.QueryBuilder {
   const questionTable = QuestionFieldsProperties.tableName;
   const choiceTable = ChoicesFieldsProperties.tableName;
@@ -81,7 +81,7 @@ export function buildFindQuestionByCheckListQuery({
   )
 
     .where((builder) => {
-      builder.where(QuestionFieldsProperties.checkList_id, checkListItemId);
+      builder.where(QuestionFieldsProperties.checkList_id, checklistId);
     })
     .andWhere(function () {
       this.whereNull(
