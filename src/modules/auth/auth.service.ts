@@ -169,6 +169,7 @@ export class AuthService {
 
     userAuth = await db<Employee>("employees")
       .join("roles", "employees.role_id", "roles.id")
+      .join("companies", "employees.company_id", "companies.id")
       .where(
         generateWhereBuilder({
           email,
