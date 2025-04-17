@@ -7,6 +7,7 @@ import {
   Get,
   Put,
   NotFoundException,
+  UnprocessableEntityException,
 } from "@nestjs/common";
 import { ChecklistsService } from "./checklists.service";
 import { CreateCheckListDto } from "./dtos/create-checklist.dto";
@@ -16,6 +17,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
+  ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { CheckList, Question } from "./entities/checklist.entity";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
@@ -154,6 +156,10 @@ export class ChecklistsController {
   @Post("connect-checklist-company")
   @ApiBody({
     type: [BatchConnectCompanyToChecklistDto],
+  })
+  @ApiUnprocessableEntityResponse({
+    description: BaseMessages.alreadyExists,
+    type: UnprocessableEntityException,
   })
   connectCheckListToCompany(@Body() dto: BatchConnectCompanyToChecklistDto[]) {
     return this.service.updateCompanyRelatedBatch(dto);

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from "@nestjs/common";
 import { CheckList } from "./entities/checklist.entity";
 import { CreateCheckListDto } from "./dtos/create-checklist.dto";
 import db from "database/connection";
@@ -302,6 +306,24 @@ export class ChecklistsService {
   async updateCompanyRelatedBatch(
     params: BatchConnectCompanyToChecklistDto[],
   ): Promise<void> {
+    const existingItems = await db<CheckListItem>(
+      CheckListItemFieldsProperties.tableName,
+    )
+      .where((builder) => {
+        for (const { companyId, checklistId } of params) {
+          builder.orWhere((qb) => {
+            qb.where("company_id", companyId).andWhere(
+              "checkList_id",
+              checklistId,
+            );
+          });
+        }
+      })
+      .select("id");
+
+    if (existingItems.length > 0) {
+      throw new UnprocessableEntityException(BaseMessages.alreadyExists);
+    }
     await Promise.all(
       params.map(async ({ checklistId, companyId }) => {
         await db<CheckListItem>(CheckListItemFieldsProperties.tableName).insert(
