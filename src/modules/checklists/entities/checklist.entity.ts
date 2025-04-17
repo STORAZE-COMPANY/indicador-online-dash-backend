@@ -6,13 +6,12 @@ import {
   IsBoolean,
   IsNumber,
   IsArray,
-  ValidateNested,
   IsDate,
   IsOptional,
 } from "class-validator";
-import { Type } from "class-transformer";
 import { CheckListFieldsProperties } from "../enums/checkList.enum";
 import { Anomalies } from "@shared/enums";
+import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
 
 export class Question {
   @ApiProperty({
@@ -50,59 +49,6 @@ export class Question {
   position: number;
 }
 
-export class Category {
-  @ApiProperty({
-    example: "Categoria de Segurança",
-    description: "Nome da categoria",
-  })
-  @IsString()
-  categoryName: string;
-
-  @ApiProperty({
-    type: [Question],
-    description: "Lista de perguntas dentro da categoria",
-  })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Question)
-  questions: Question[];
-}
-
-export class Checklist {
-  @ApiProperty({ example: 1, description: "ID único do checklist" })
-  @IsNumber()
-  id: number;
-
-  @ApiProperty({
-    example: "Checklist de Segurança",
-    description: "Nome do checklist",
-  })
-  @IsString()
-  name: string;
-
-  @ApiProperty({
-    type: [Category],
-    description: "Lista de categorias dentro do checklist",
-  })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Category)
-  categories: Category[];
-
-  @ApiProperty({
-    example: "2024-03-27T12:00:00Z",
-    description: "Data de criação",
-    required: false,
-  })
-  created_at?: Date;
-
-  @ApiProperty({
-    example: "2024-03-27T12:00:00Z",
-    description: "Última atualização",
-    required: false,
-  })
-  updated_at?: Date;
-}
 export class CheckList {
   @ApiProperty({ description: CheckListFieldsProperties.id })
   @IsString()
@@ -159,6 +105,9 @@ export class CheckListQuestions {
   @IsString()
   @IsOptional()
   IAPrompt: string | null;
+
+  @IsNonBlankString({ isOptional: false })
+  categories_id: string;
 }
 export class CheckListMultipleChoice {
   @IsString()

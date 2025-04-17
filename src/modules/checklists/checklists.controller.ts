@@ -26,7 +26,6 @@ import {
 import { employeeIdDto, FindParamsDto } from "./dtos/find-params.dto";
 import {
   UpdateChecklistDto,
-  UpdateChecklistItemDto,
   UpdateCompanyRelated,
   updateExpiriesTime,
 } from "./dtos/update-checklist.dto";
@@ -37,6 +36,7 @@ import {
   BatchConnectCompanyToChecklistDto,
 } from "./dtos/batch.dto";
 import { BaseMessages } from "@shared/enums";
+import { CheckListDto } from "./dtos/find.dto";
 
 /**
  * Controlador responsável por gerenciar as operações relacionadas aos checklists.
@@ -82,7 +82,13 @@ export class ChecklistsController {
       byCompany: dto.byCompany && Number(dto.byCompany),
     });
   }
-
+  @Get("all")
+  @ApiOkResponse({
+    type: [CheckListDto],
+  })
+  findAll(): Promise<CheckListDto[]> {
+    return this.service.findAll();
+  }
   @Get("checkListWithCompanies")
   @ApiOkResponse({
     type: [GroupedCheckList],
@@ -167,7 +173,7 @@ export class ChecklistsController {
     return this.service.batchConnectCheckListQuestionsToEmployee(dto);
   }
 
-  @Put("update-checklist-name")
+  @Put()
   @ApiNotFoundResponse({
     description: BaseMessages.notFound,
     type: NotFoundException,
@@ -177,20 +183,6 @@ export class ChecklistsController {
   })
   updateCheckListName(@Body() dto: UpdateChecklistDto) {
     return this.service.updateCheckList({
-      ...dto,
-    });
-  }
-
-  @Put("update-checklistItem")
-  @ApiNotFoundResponse({
-    description: BaseMessages.notFound,
-    type: NotFoundException,
-  })
-  @ApiOkResponse({
-    type: CheckListItem,
-  })
-  updateCheckListItemName(@Body() dto: UpdateChecklistItemDto) {
-    return this.service.updateCheckListItem({
       ...dto,
     });
   }

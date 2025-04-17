@@ -18,6 +18,7 @@ import {
 import { Anomalies, BaseMessagesValidations } from "@shared/enums";
 import { notBlankRegex } from "@shared/validations/annotationsValidations";
 import { Type } from "class-transformer";
+import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
 
 export class CheckListMultipleChoiceDto {
   @ApiProperty({
@@ -45,6 +46,13 @@ export class CheckListQuestionsDto {
   @Matches(notBlankRegex, { message: BaseMessagesValidations.notBlank })
   @IsNotEmpty({ message: BaseMessagesValidations.notEmpty })
   question: string;
+
+  @ApiProperty({
+    description: CheckListQuestionFieldsProperties.categories_id,
+  })
+  @IsString()
+  @IsNonBlankString({ isOptional: false })
+  category_id: string;
 
   @ApiProperty({
     description: CheckListQuestionFieldsProperties.answerType,

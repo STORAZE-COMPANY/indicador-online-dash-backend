@@ -14,11 +14,7 @@ class Company {
   @ApiProperty({
     description: "ID do checklist associado à empresa",
   })
-  checklistItemId: string;
-  @ApiProperty({
-    description: "ID da categoria do checklist",
-  })
-  categories_id: string;
+  checklistItem_id: string;
 
   @ApiProperty({
     description: "Indica se o checklist possui anomalias",

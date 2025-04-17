@@ -12,7 +12,6 @@ import {
   buildQuestionsRelatedQueryWithJoins,
   handleBuildChoicesToInsert,
   handleBuildQuestionsToInsert,
-  handleCreateCheckListItem,
   handleCreateMultipleChoice,
   handleCreateQuestion,
 } from "./auxliar/auxiliar.func";
@@ -33,16 +32,13 @@ import {
 } from "@modules/questions/enums";
 import { Question } from "@modules/questions/entities/question.entity";
 import { Anomalies, BaseMessages } from "@shared/enums";
-import { CategoriesFieldsProperties } from "@modules/categories/enums";
 import { GroupedCheckList } from "./interfaces/checklist.interface";
 import {
   batchConnectCheckListQuestionsToEmployeeDto,
   BatchConnectCompanyToChecklistDto,
 } from "./dtos/batch.dto";
-import {
-  UpdateChecklistDto,
-  UpdateChecklistItemDto,
-} from "./dtos/update-checklist.dto";
+import { UpdateChecklistDto } from "./dtos/update-checklist.dto";
+import { CheckListDto } from "./dtos/find.dto";
 
 @Injectable()
 export class ChecklistsService {
@@ -56,17 +52,10 @@ export class ChecklistsService {
         })
         .returning("*");
 
-      const checkListItemCreated = await handleCreateCheckListItem(
-        dto.checkListItem.map((item) => ({
-          categories_id: item.categoriesId,
-          checkList_id: created.id,
-        })),
-        trx,
-      );
-      const allQuestionsToInsert = handleBuildQuestionsToInsert(
-        dto.checkListItem,
-        checkListItemCreated,
-      );
+      const allQuestionsToInsert = handleBuildQuestionsToInsert({
+        questionsDto: dto.question_list,
+        checklistId: created.id,
+      });
 
       const questionsCreated = await handleCreateQuestion(
         allQuestionsToInsert,
@@ -75,7 +64,7 @@ export class ChecklistsService {
 
       if (questionsCreated.some((item) => item.type === "Múltipla escolha")) {
         const choicesToInsert = handleBuildChoicesToInsert(
-          dto.checkListItem.map((item) => item.question_list).flat(),
+          dto.question_list.map((item) => item),
           questionsCreated,
         );
 
@@ -83,6 +72,31 @@ export class ChecklistsService {
       }
 
       return created;
+    });
+  }
+  async findAll(): Promise<CheckListDto[]> {
+    const checkListItemList: CheckListDto[] = await db<CheckList>(
+      CheckListFieldsProperties.tableName,
+    ).select([`${CheckListFieldsProperties.tableName}.*`]);
+
+    const questions: Question[] = await db<Question>(
+      QuestionFieldsProperties.tableName,
+    )
+      .whereIn(
+        `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
+        checkListItemList.map((item) => item.id),
+      )
+      .select([`${QuestionFieldsProperties.tableName}.*`]);
+
+    return checkListItemList.map((item) => {
+      const questionsRelated = questions.filter(
+        (question) => question.checklist_id === item.id,
+      );
+
+      return {
+        ...item,
+        questions: questionsRelated,
+      };
     });
   }
   async findPaginatedCheckList({
@@ -102,7 +116,6 @@ export class ChecklistsService {
         Number(limit),
         offset,
       ).select([
-        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.categories_id}`,
         `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
         `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.company_id}`,
         `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.created_at}`,
@@ -125,7 +138,7 @@ export class ChecklistsService {
 
     const checkListItemWithQuestions = checkListItemList.map((item) => {
       const questions = questionsRelated.filter(
-        (question) => question.checkListItem_id === item.checklistItemId,
+        (question) => question.checklist_id === item.checklistItemId,
       );
 
       return {
@@ -152,8 +165,7 @@ export class ChecklistsService {
           id: row.companyId,
           name: row.companyName,
           hasAnomalies: row.hasAnomalies,
-          checklistItemId: row.checklistItemId,
-          categories_id: row.categories_id,
+          checklistItem_id: row.checklistItemId,
         });
 
         return acc;
@@ -179,7 +191,6 @@ export class ChecklistsService {
         Number(limit),
         offset,
       ).select([
-        `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.categories_id}`,
         `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
         `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.company_id}`,
         `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.created_at}`,
@@ -202,7 +213,7 @@ export class ChecklistsService {
 
     const checkListItemWithQuestions = checkListItemList.map((item) => {
       const questions = questionsRelated.filter(
-        (question) => question.checkListItem_id === item.checklistItemId,
+        (question) => question.checklist_id === item.checklistItemId,
       );
 
       return {
@@ -222,13 +233,11 @@ export class ChecklistsService {
   }: employeeIdDto): Promise<CheckListForSpecificEmployee[]> {
     const checkListItemList: CheckListForSpecificEmployee[] =
       await buildCheckListWithEmployeeRelatedQueryWithJoins(
-        db<CheckListItem>(CheckListItemFieldsProperties.tableName),
+        db<CheckList>(CheckListFieldsProperties.tableName),
         employeeId,
         query,
       ).select([
-        `${CheckListItemFieldsProperties.tableName}.id as checklistId`,
-        `${CategoriesFieldsProperties.tableName}.name as categoryName`,
-
+        `${CheckListFieldsProperties.tableName}.id as checklistId`,
         `${CheckListFieldsProperties.tableName}.name as checklistName`,
       ]);
 
@@ -291,33 +300,33 @@ export class ChecklistsService {
     params: BatchConnectCompanyToChecklistDto[],
   ): Promise<void> {
     await Promise.all(
-      params.map(async ({ checklistId, companyId, categories_id }) => {
+      params.map(async ({ checklistId, companyId }) => {
         await db<CheckListItem>(CheckListItemFieldsProperties.tableName).insert(
           {
             company_id: companyId,
             checkList_id: checklistId,
-            categories_id,
           },
         );
       }),
     );
   }
+
   async batchConnectCheckListQuestionsToEmployee({
     checklistId,
     employee_id,
   }: batchConnectCheckListQuestionsToEmployeeDto) {
-    const checkListItem = await db<CheckListItem>(
-      CheckListItemFieldsProperties.tableName,
-    ).where({ checkList_id: checklistId });
+    const checkList = await db<CheckList>(
+      CheckListFieldsProperties.tableName,
+    ).where({ id: checklistId });
 
-    if (!checkListItem) throw new NotFoundException(BaseMessages.notFound);
+    if (!checkList) throw new NotFoundException(BaseMessages.notFound);
 
     const [questionsUpdated] = await db<Question>(
       QuestionFieldsProperties.tableName,
     )
       .whereIn(
         `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
-        checkListItem.map((item) => item.id),
+        checkList.map((item) => item.id),
       )
       .update({
         employee_id,
@@ -341,34 +350,6 @@ export class ChecklistsService {
         id: checkListId,
       })
       .returning("*");
-
-    return updated;
-  }
-
-  async updateCheckListItem({
-    categoryId,
-    checkListItemId,
-  }: UpdateChecklistItemDto) {
-    const checkListItem = await db<CheckListItem>(
-      CheckListItemFieldsProperties.tableName,
-    )
-      .where({ id: checkListItemId })
-      .first();
-    if (!checkListItem) throw new NotFoundException(BaseMessages.notFound);
-
-    const [updated] = await db<CheckListItem>(
-      CheckListItemFieldsProperties.tableName,
-    )
-      .where({
-        id: checkListItemId,
-      })
-      .update({
-        categories_id: categoryId,
-        updated_at: new Date(),
-      })
-      .returning("*");
-
-    console.log("updated", updated);
 
     return updated;
   }

@@ -62,11 +62,4 @@ export class UpdateChecklistItemDto {
     description: CheckListFieldsProperties.id,
   })
   checkListItemId: string;
-
-  @ApiPropertyOptional({
-    description: "ID da categoria",
-  })
-  @IsString()
-  @IsOptional()
-  categoryId: string;
 }

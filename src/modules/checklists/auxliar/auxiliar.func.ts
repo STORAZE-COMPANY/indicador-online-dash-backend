@@ -1,5 +1,4 @@
 import { Knex } from "knex";
-import { CreateCheckListItemDto } from "../dtos/check_list_item.dto";
 import { CheckListQuestionsDto } from "../dtos/question.dto";
 import {
   CheckListMultipleChoice,
@@ -11,7 +10,10 @@ import {
   CheckListQuestionFieldsProperties,
   QuestionType,
 } from "../enums/question-type.enum";
-import { QuestionsFormatted } from "../interfaces/questions.interface";
+import {
+  ICheckListQuestions,
+  QuestionsFormatted,
+} from "../interfaces/questions.interface";
 import { checkListMessages } from "../enums/messages.enum";
 import { InternalServerErrorException } from "@nestjs/common";
 import { CheckListItemFieldsProperties } from "../enums/checkListItem.enum";
@@ -26,7 +28,6 @@ import { Question } from "@modules/questions/entities/question.entity";
 import { FindParamsDto } from "../dtos/find-params.dto";
 import { EmployeesFields } from "@modules/employees/enums";
 import { Employee } from "@modules/employees/entities/employee.entity";
-import { CategoriesFieldsProperties } from "@modules/categories/enums";
 
 /**
  * Cria um item de checklist no banco de dados utilizando uma transação.
@@ -67,8 +68,9 @@ export async function handleCreateCheckListItem(
  */
 export async function handleCreateQuestion(
   questions: {
-    checkListItem_id: string;
+    checklist_id: string;
     question: string;
+    category_id: string;
     type: QuestionType;
     isRequired: boolean;
   }[],
@@ -137,25 +139,22 @@ export async function handleCreateMultipleChoice(
  * formatada e associada ao respectivo item de checklist.
  *
  */
-export function handleBuildQuestionsToInsert(
-  questionsDto: CreateCheckListItemDto[],
-  checkListItemCreated: CheckListItem[],
-): QuestionsFormatted[] {
-  const allQuestionsToInsert: QuestionsFormatted[] = [];
-
-  questionsDto.forEach((item, index) => {
-    const relatedCheckListItem = checkListItemCreated[index];
-    const questions = item.question_list.map((item) => ({
-      checkListItem_id: relatedCheckListItem.id,
-      isRequired: item.isRequired,
-      question: item.question,
-      answerType: item.answerType,
-      type: item.type,
-      IAPrompt: item.iaPrompt,
-    }));
-    allQuestionsToInsert.push(...questions);
-  });
-  return allQuestionsToInsert;
+export function handleBuildQuestionsToInsert({
+  checklistId,
+  questionsDto,
+}: {
+  questionsDto: ICheckListQuestions[];
+  checklistId: string;
+}): QuestionsFormatted[] {
+  return questionsDto.map((question) => ({
+    checklist_id: checklistId,
+    category_id: question.category_id,
+    isRequired: question.isRequired,
+    question: question.question,
+    answerType: question.answerType,
+    type: question.type,
+    IAPrompt: question.iaPrompt,
+  }));
 }
 /**
  * Processa uma lista de perguntas e suas escolhas múltiplas para inserção no banco de dados.
@@ -266,6 +265,7 @@ export function buildCheckListItemQueryWithJoins(
     .limit(limit)
     .offset(offset);
 }
+
 export function buildCheckListQueryWithJoins(
   base: Knex.QueryBuilder,
   params: Partial<FindParamsDto>,
@@ -322,7 +322,7 @@ export function buildCheckListQueryWithJoins(
  */
 export function buildQuestionsRelatedQueryWithJoins(
   base: Knex.QueryBuilder,
-  checkListItemIds: string[],
+  checkListIds: string[],
   hasAnomalies?: boolean,
 ): Knex.QueryBuilder {
   return base
@@ -333,7 +333,7 @@ export function buildQuestionsRelatedQueryWithJoins(
     )
     .where((builder: Knex.QueryBuilder<Question>) => {
       builder
-        .whereIn("checkListItem_id", checkListItemIds)
+        .whereIn("checklist_id", checkListIds)
         .andWhere("type", QuestionType.MULTIPLE_CHOICE);
       if (hasAnomalies) {
         builder.where(
@@ -378,26 +378,14 @@ export function buildCheckListWithEmployeeRelatedQueryWithJoins(
 ): Knex.QueryBuilder {
   return base
     .join(
-      CheckListFieldsProperties.tableName,
-      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
-      `${CheckListFieldsProperties.tableName}.id`,
-    )
-
-    .join(
       QuestionFieldsProperties.tableName,
       `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
-      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.id}`,
+      `${CheckListFieldsProperties.tableName}.id`,
     )
-
     .join(
       EmployeesFields.tableName,
       `${EmployeesFields.tableName}.${EmployeesFields.id}`,
       `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.employee_id}`,
-    )
-    .join(
-      CategoriesFieldsProperties.tableName,
-      `${CategoriesFieldsProperties.tableName}.id`,
-      `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.categories_id}`,
     )
 
     .leftJoin(
@@ -410,11 +398,13 @@ export function buildCheckListWithEmployeeRelatedQueryWithJoins(
         `${EmployeesFields.tableName}.${EmployeesFields.id}`,
         employeeId,
       );
-      builder.where(
-        `${CheckListFieldsProperties.tableName}.name`,
-        "ilike",
-        `%${query}%`,
-      );
+      if (query) {
+        builder.where(
+          `${CheckListFieldsProperties.tableName}.name`,
+          "ilike",
+          `%${query}%`,
+        );
+      }
     })
     .distinct();
 }

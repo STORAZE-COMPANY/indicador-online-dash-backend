@@ -7,12 +7,6 @@ export class CheckListItem {
   id: string;
 
   @ApiProperty({
-    description: CheckListItemFieldsProperties.categories_id,
-  })
-  @IsString()
-  categories_id: string;
-
-  @ApiProperty({
     description: CheckListItemFieldsProperties.checkList_id,
   })
   @IsString()

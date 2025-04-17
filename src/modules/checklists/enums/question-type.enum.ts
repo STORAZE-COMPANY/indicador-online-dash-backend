@@ -19,6 +19,8 @@ export enum CheckListMultipleChoiceFieldsProperties {
 export enum CheckListQuestionFieldsProperties {
   question = "Pergunta",
 
+  categories_id = "ID da categoria",
+
   list = "Lista de perguntas",
 
   prompt = "Prompt da IA",

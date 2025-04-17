@@ -8,10 +8,11 @@ import {
 import { ApiProperty } from "@nestjs/swagger";
 import { BaseMessagesValidations } from "@shared/enums";
 import { notBlankRegex } from "@shared/validations/annotationsValidations";
-import { CreateCheckListItemDto } from "./check_list_item.dto";
 import { CheckListFieldsProperties } from "@modules/checklists/enums/checkList.enum";
 import { Type } from "class-transformer";
-import { checkListItemExample } from "@modules/checklists/dtos/constants/examplesForSwagger/checkListItem";
+import { CheckListItemFieldsProperties } from "../enums/checkListItem.enum";
+import { CheckListQuestionFieldsProperties } from "../enums/question-type.enum";
+import { CheckListQuestionsDto } from "./question.dto";
 
 export class CreateCheckListDto {
   @ApiProperty({
@@ -24,12 +25,14 @@ export class CreateCheckListDto {
   name: string;
 
   @ApiProperty({
-    type: [CreateCheckListItemDto],
-    description: CheckListFieldsProperties.checkListItem,
-    example: checkListItemExample,
+    description: CheckListItemFieldsProperties.categories_id,
   })
-  @Type(() => CreateCheckListItemDto)
-  @ValidateNested({ each: true })
+  @ApiProperty({
+    description: CheckListQuestionFieldsProperties.list,
+    type: [CheckListQuestionsDto],
+  })
   @IsArray()
-  checkListItem: CreateCheckListItemDto[];
+  @ValidateNested({ each: true })
+  @Type(() => CheckListQuestionsDto)
+  question_list: CheckListQuestionsDto[];
 }

@@ -2,16 +2,12 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
-  IsNotEmpty,
   IsString,
-  Matches,
   ValidateNested,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { CheckListQuestionFieldsProperties } from "../enums/question-type.enum";
-import { BaseMessagesValidations } from "@shared/enums";
 
-import { notBlankRegex } from "@shared/validations/annotationsValidations";
 import { Type } from "class-transformer";
 import { CheckListQuestionsDto } from "./question.dto";
 import { CheckListItemFieldsProperties } from "../enums/checkListItem.enum";
@@ -20,11 +16,6 @@ export class CreateCheckListItemDto {
   @ApiProperty({
     description: CheckListItemFieldsProperties.categories_id,
   })
-  @IsString()
-  @Matches(notBlankRegex, { message: BaseMessagesValidations.notBlank })
-  @IsNotEmpty({ message: BaseMessagesValidations.notEmpty })
-  categoriesId: string;
-
   @ApiProperty({
     description: CheckListQuestionFieldsProperties.list,
     type: [CheckListQuestionsDto],
@@ -39,12 +30,6 @@ export class CheckListItemFormattedList {
   @ApiProperty({ description: CheckListItemFieldsProperties.id })
   @IsString()
   checklistItemId: string;
-
-  @ApiProperty({
-    description: CheckListItemFieldsProperties.categories_id,
-  })
-  @IsString()
-  categories_id: string;
 
   @ApiProperty({
     description: CheckListItemFieldsProperties.checkList_id,
@@ -104,10 +89,4 @@ export class CheckListForSpecificEmployee {
   })
   @IsString()
   checklistName: string;
-
-  @ApiProperty({
-    description: "Nome da categoria do checklist",
-  })
-  @IsString()
-  categoryName: string;
 }
