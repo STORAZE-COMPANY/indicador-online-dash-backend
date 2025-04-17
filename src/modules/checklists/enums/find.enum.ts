@@ -4,4 +4,6 @@ export enum FindParamsEnum {
   hasAnomaly = "Buscar por anomalia",
 
   employeeId = "ID do funcionário",
+
+  query = "Buscar por query",
 }

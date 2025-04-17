@@ -38,6 +38,11 @@ export class FindParamsDto extends Period {
     isOptional: false,
   })
   page: string;
+
+  @ApiPropertyOptional({ description: FindParamsEnum.query })
+  @IsString()
+  @IsOptional()
+  query?: string;
 }
 
 export class employeeIdDto {
@@ -48,4 +53,9 @@ export class employeeIdDto {
     isOptional: false,
   })
   employeeId: string;
+
+  @ApiPropertyOptional({ description: FindParamsEnum.query })
+  @IsString()
+  @IsOptional()
+  query?: string;
 }

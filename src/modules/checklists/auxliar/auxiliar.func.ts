@@ -255,6 +255,13 @@ export function buildCheckListItemQueryWithJoins(
           [params.startDate, params.endDate],
         );
       }
+      if (params.query) {
+        builder.where(
+          `${CheckListFieldsProperties.tableName}.name`,
+          "ilike",
+          `%${params.query}%`,
+        );
+      }
     })
     .limit(limit)
     .offset(offset);
@@ -288,6 +295,13 @@ export function buildCheckListQueryWithJoins(
         builder.whereBetween(
           `${CheckListItemFieldsProperties.tableName}.created_at`,
           [params.startDate, params.endDate],
+        );
+      }
+      if (params.query) {
+        builder.where(
+          `${CheckListFieldsProperties.tableName}.name`,
+          "ilike",
+          `%${params.query}%`,
         );
       }
     })
@@ -360,6 +374,7 @@ export function buildQuestionsRelatedQueryWithJoins(
 export function buildCheckListWithEmployeeRelatedQueryWithJoins(
   base: Knex.QueryBuilder,
   employeeId: string,
+  query?: string,
 ): Knex.QueryBuilder {
   return base
     .join(
@@ -394,6 +409,11 @@ export function buildCheckListWithEmployeeRelatedQueryWithJoins(
       builder.where(
         `${EmployeesFields.tableName}.${EmployeesFields.id}`,
         employeeId,
+      );
+      builder.where(
+        `${CheckListFieldsProperties.tableName}.name`,
+        "ilike",
+        `%${query}%`,
       );
     })
     .distinct();

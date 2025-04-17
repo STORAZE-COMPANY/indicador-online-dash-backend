@@ -75,7 +75,6 @@ export class QuestionsService {
     );
     return questionsWithChoices;
   }
-
   async create(question: QuestionDto): Promise<Question> {
     const [createdQuestion] = await db<Question>(
       QuestionFieldsProperties.tableName,
@@ -116,7 +115,6 @@ export class QuestionsService {
 
     return createdQuestion;
   }
-
   async update(questionToUpdate: UpdateQuestion): Promise<Question> {
     const { questionId, ...questionData } = questionToUpdate;
 
@@ -138,7 +136,6 @@ export class QuestionsService {
 
     return questionUpdated;
   }
-
   async delete(
     questionId: string,
   ): Promise<{ message: QuestionsMessages.successDelete }> {

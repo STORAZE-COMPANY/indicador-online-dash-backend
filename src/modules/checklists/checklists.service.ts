@@ -91,13 +91,14 @@ export class ChecklistsService {
     startDate,
     limit,
     page,
+    query,
   }: FindParamsDto): Promise<GroupedCheckList[]> {
     const offset = (Number(page) - 1) * Number(limit);
 
     const checkListItemList: CheckListItemFormattedList[] =
       await buildCheckListQueryWithJoins(
         db<CheckList>(CheckListFieldsProperties.tableName),
-        { byCompany, startDate, endDate },
+        { byCompany, startDate, endDate, query },
         Number(limit),
         offset,
       ).select([
@@ -217,11 +218,13 @@ export class ChecklistsService {
 
   async findPaginatedByEmployeeResponsible({
     employeeId,
+    query,
   }: employeeIdDto): Promise<CheckListForSpecificEmployee[]> {
     const checkListItemList: CheckListForSpecificEmployee[] =
       await buildCheckListWithEmployeeRelatedQueryWithJoins(
         db<CheckListItem>(CheckListItemFieldsProperties.tableName),
         employeeId,
+        query,
       ).select([
         `${CheckListItemFieldsProperties.tableName}.id as checklistId`,
         `${CategoriesFieldsProperties.tableName}.name as categoryName`,
