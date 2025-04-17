@@ -15,8 +15,8 @@ export class AnswerBaseDto {
   @ApiProperty({
     description: createAnswerDtoProperties.employee_id,
   })
-  @IsNumber()
-  employee_id: number;
+  @IsNonBlankString({ isOptional: false })
+  employee_id: string;
 }
 export class CreateAnswerDto extends AnswerBaseDto {
   @ApiProperty({
