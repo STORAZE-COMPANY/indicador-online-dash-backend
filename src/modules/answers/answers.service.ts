@@ -63,13 +63,21 @@ import { AnswersWithQuestion } from "./dtos/find-answers.dto";
 
 @Injectable()
 export class AnswersService {
-  async findAllAnswers(): Promise<AnswersWithQuestion[]> {
+  async findAllAnswers(employee_id?: string): Promise<AnswersWithQuestion[]> {
     return await db<Answers>(AnswerFieldsProperties.tableName)
       .join(
         QuestionFieldsProperties.tableName,
         `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.question_id}`,
         `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.id}`,
       )
+      .where((builder) => {
+        if (employee_id) {
+          builder.where(
+            `${AnswerFieldsProperties.tableName}.${AnswerFieldsProperties.employee_id}`,
+            employee_id,
+          );
+        }
+      })
       .select(
         `${AnswerFieldsProperties.tableName}.*`,
         `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.question} as question`,

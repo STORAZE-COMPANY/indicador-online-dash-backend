@@ -18,6 +18,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
@@ -58,8 +59,16 @@ export class AnswersController {
     description: BaseMessages.unAuthorizedUser,
     type: UnauthorizedException,
   })
-  findList(): Promise<AnswersWithQuestion[]> {
-    return this.service.findAllAnswers();
+  @ApiQuery({
+    name: "employee_id",
+    required: false,
+    description: "ID do funcionário",
+    type: String,
+  })
+  findList(
+    @Query("employee_id") employee_id?: string,
+  ): Promise<AnswersWithQuestion[]> {
+    return this.service.findAllAnswers(employee_id);
   }
 
   @Post()
