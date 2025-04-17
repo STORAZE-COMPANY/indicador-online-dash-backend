@@ -125,6 +125,7 @@ export class ChecklistsService {
         `${CompaniesFieldsProperties.tableName}.name as companyName`,
         `${CompaniesFieldsProperties.tableName}.id as companyId`,
         `${CheckListFieldsProperties.tableName}.name as checklistName`,
+        `${CheckListFieldsProperties.tableName}.id as checkList_id`,
       ]);
 
     const questionsRelated: (Question & { anomaly: Anomalies | null })[] =
@@ -137,8 +138,9 @@ export class ChecklistsService {
       ]);
 
     const checkListItemWithQuestions = checkListItemList.map((item) => {
+      if (!item.checkList_id) return item;
       const questions = questionsRelated.filter(
-        (question) => question.checklist_id === item.checklistItemId,
+        (question) => question.checklist_id === item.checkList_id,
       );
 
       return {
@@ -212,6 +214,7 @@ export class ChecklistsService {
       ]);
 
     const checkListItemWithQuestions = checkListItemList.map((item) => {
+      if (!item.checklistItemId) return item;
       const questions = questionsRelated.filter(
         (question) => question.checklist_id === item.checklistItemId,
       );

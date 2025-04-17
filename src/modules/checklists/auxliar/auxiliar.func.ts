@@ -235,7 +235,7 @@ export function buildCheckListItemQueryWithJoins(
       `${CompaniesFieldsProperties.tableName}.id`,
       `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.company_id}`,
     )
-    .join(
+    .leftJoin(
       CheckListFieldsProperties.tableName,
       `${CheckListFieldsProperties.tableName}.id`,
       `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
@@ -273,7 +273,7 @@ export function buildCheckListQueryWithJoins(
   offset: number,
 ) {
   return base
-    .join(
+    .leftJoin(
       CheckListItemFieldsProperties.tableName,
       `${CheckListFieldsProperties.tableName}.id`,
       `${CheckListItemFieldsProperties.tableName}.${CheckListItemFieldsProperties.checkList_id}`,
