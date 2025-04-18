@@ -239,7 +239,13 @@ export class AnswersController {
     type: UnauthorizedException,
   })
   @UseGuards(JwtAuthGuard)
-  async findAnomalyResolutionList() {
-    return this.service.findAnomalyResolutionList();
+  @ApiQuery({
+    name: "answer_id",
+    required: false,
+    description: "ID da resposta",
+    type: String,
+  })
+  async findAnomalyResolutionList(@Query("answer_id") answer_id?: string) {
+    return this.service.findAnomalyResolutionList(answer_id);
   }
 }

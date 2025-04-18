@@ -396,10 +396,18 @@ export class AnswersService {
     return resolution;
   }
 
-  async findAnomalyResolutionList(): Promise<AnomalyResolution[]> {
+  async findAnomalyResolutionList(
+    answer_id?: string,
+  ): Promise<AnomalyResolution[]> {
     const resolutions: AnomalyResolution[] = await db<AnomalyResolution>(
       AnomalyResolutionFieldsProperties.tableName,
-    ).select("*");
+    )
+      .where((builder) => {
+        if (answer_id) {
+          builder.where({ answer_id });
+        }
+      })
+      .select("*");
 
     return resolutions;
   }
