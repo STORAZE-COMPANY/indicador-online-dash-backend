@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import {
+  ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
@@ -53,6 +54,29 @@ export class ChecklistOnEmployeeController {
     @Body() dto: checklistOnEmployeeCreateDto,
   ): Promise<checklistOnEmployee> {
     return this.service.connectCheckListOnEmployee({ ...dto });
+  }
+
+  @Post("batch")
+  @UseGuards(JwtAuthGuard)
+  @ApiCreatedResponse({
+    type: checklistOnEmployee,
+  })
+  @ApiUnauthorizedResponse({
+    description: BaseMessages.unAuthorizedUser,
+    type: UnauthorizedException,
+  })
+  @ApiConflictResponse({
+    description: BaseMessages.alreadyExists,
+    type: UnprocessableEntityException,
+  })
+  @ApiBody({
+    type: [checklistOnEmployeeCreateDto],
+    description: "Array of checklistOnEmployeeCreateDto",
+  })
+  async createBatch(
+    @Body() dto: checklistOnEmployeeCreateDto[],
+  ): Promise<checklistOnEmployee> {
+    return this.service.connectCheckListOnEmployeeBatch(dto);
   }
 
   @Get("by-employee")

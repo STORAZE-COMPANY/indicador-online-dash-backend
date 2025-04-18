@@ -61,6 +61,29 @@ export class ChecklistOnEmployeeService {
 
     return created;
   }
+  async connectCheckListOnEmployeeBatch(
+    params: checklistOnEmployeeCreateDto[],
+  ): Promise<checklistOnEmployee> {
+    const checkListOnEmployee = await db<checklistOnEmployee>(
+      ChecklistOnEmployeeFieldsProperties.tableName,
+    ).where((builder) => {
+      for (const { checklist_id, employee_id } of params) {
+        builder.where({ checklist_id, employee_id });
+      }
+    });
+
+    if (checkListOnEmployee && checkListOnEmployee.length > 0) {
+      throw new UnprocessableEntityException(BaseMessages.alreadyExists);
+    }
+
+    const [created] = await db<checklistOnEmployee>(
+      ChecklistOnEmployeeFieldsProperties.tableName,
+    )
+      .insert(params)
+      .returning("*");
+
+    return created;
+  }
   async findPaginatedByEmployeeResponsible({
     employeeId,
     query,
