@@ -27,7 +27,7 @@ import { CheckListItem } from "./entities/checkListItem.entity";
 import { CheckListItemFieldsProperties } from "./enums/checkListItem.enum";
 import { CompaniesFieldsProperties } from "@modules/companies/enums";
 import {
-  CheckListForSpecificEmployee,
+  CheckListByEmployee,
   CheckListItemFormattedList,
 } from "./dtos/check_list_item.dto";
 import {
@@ -37,12 +37,11 @@ import {
 import { Question } from "@modules/questions/entities/question.entity";
 import { Anomalies, BaseMessages } from "@shared/enums";
 import { GroupedCheckList } from "./interfaces/checklist.interface";
-import {
-  batchConnectCheckListQuestionsToEmployeeDto,
-  BatchConnectCompanyToChecklistDto,
-} from "./dtos/batch.dto";
+import { BatchConnectCompanyToChecklistDto } from "./dtos/batch.dto";
 import { UpdateChecklistDto } from "./dtos/update-checklist.dto";
 import { CheckListDto } from "./dtos/find.dto";
+import { ChecklistOnEmployeeFieldsProperties } from "@modules/checklistOnEmployee/enums";
+import { checklistOnEmployee } from "@modules/checklistOnEmployee/entities/checklistOnEmployee.entity";
 
 @Injectable()
 export class ChecklistsService {
@@ -166,13 +165,14 @@ export class ChecklistsService {
             companies: [],
           };
         }
-
-        acc[checklistId].companies.push({
-          id: row.companyId,
-          name: row.companyName,
-          hasAnomalies: row.hasAnomalies,
-          checklistItem_id: row.checklistItemId,
-        });
+        if (row.companyId) {
+          acc[checklistId].companies.push({
+            id: row.companyId,
+            name: row.companyName,
+            hasAnomalies: row.hasAnomalies,
+            checklistItem_id: row.checklistItemId,
+          });
+        }
 
         return acc;
       },
@@ -237,13 +237,15 @@ export class ChecklistsService {
   async findPaginatedByEmployeeResponsible({
     employeeId,
     query,
-  }: employeeIdDto): Promise<CheckListForSpecificEmployee[]> {
-    const checkListItemList: CheckListForSpecificEmployee[] =
-      await buildCheckListWithEmployeeRelatedQueryWithJoins(
-        db<CheckList>(CheckListFieldsProperties.tableName),
+  }: employeeIdDto): Promise<CheckListByEmployee[]> {
+    const checkListItemList: CheckListByEmployee[] =
+      await buildCheckListWithEmployeeRelatedQueryWithJoins({
+        base: db<checklistOnEmployee>(
+          ChecklistOnEmployeeFieldsProperties.tableName,
+        ),
         employeeId,
         query,
-      ).select([
+      }).select([
         `${CheckListFieldsProperties.tableName}.id as checklistId`,
         `${CheckListFieldsProperties.tableName}.name as checklistName`,
       ]);
@@ -334,31 +336,6 @@ export class ChecklistsService {
         );
       }),
     );
-  }
-
-  async batchConnectCheckListQuestionsToEmployee({
-    checklistId,
-    employee_id,
-  }: batchConnectCheckListQuestionsToEmployeeDto) {
-    const checkList = await db<CheckList>(
-      CheckListFieldsProperties.tableName,
-    ).where({ id: checklistId });
-
-    if (!checkList) throw new NotFoundException(BaseMessages.notFound);
-
-    const [questionsUpdated] = await db<Question>(
-      QuestionFieldsProperties.tableName,
-    )
-      .whereIn(
-        `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
-        checkList.map((item) => item.id),
-      )
-      .update({
-        employee_id,
-      })
-      .returning("*");
-
-    return questionsUpdated;
   }
 
   async updateCheckList({ checkListId, name }: UpdateChecklistDto) {

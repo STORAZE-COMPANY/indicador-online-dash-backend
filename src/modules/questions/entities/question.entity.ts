@@ -14,8 +14,6 @@ export class Question {
 
   IAPrompt: string | null;
 
-  employee_id: number | null;
-
   category_id: string;
 
   answerType: QuestionAnswerType;

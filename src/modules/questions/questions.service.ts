@@ -27,7 +27,6 @@ export class QuestionsService {
     page,
   }: {
     checklistId: string;
-    onlyUnanswered?: boolean;
     page: number;
     limit: number;
   }): Promise<QuestionsWithChoices[]> {
@@ -86,7 +85,7 @@ export class QuestionsService {
         isRequired: question.isRequired,
         answerType: question.answerType,
         IAPrompt: question.IAPrompt,
-        employee_id: question.employee_id,
+
         category_id: question.category_id,
       })
       .returning("*");

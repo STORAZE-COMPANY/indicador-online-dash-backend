@@ -17,19 +17,3 @@ export class BatchConnectCompanyToChecklistDto {
   @IsNonBlankString({ isOptional: false })
   checklistId: string;
 }
-
-export class batchConnectCheckListQuestionsToEmployeeDto {
-  @ApiProperty({
-    description: "The ID of the checklist to connect to the company",
-    example: 1,
-  })
-  @IsNonBlankString({ isOptional: false })
-  checklistId: string;
-
-  @ApiProperty({
-    description: "Employee ID to connect to the checklist",
-    example: 1,
-  })
-  @IsNumber()
-  employee_id: number;
-}

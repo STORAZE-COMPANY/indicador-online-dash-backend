@@ -6,7 +6,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Anomalies, QuestionAnswerType } from "@shared/enums";
 import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsEnum, IsNumber } from "class-validator";
+import { IsArray, IsBoolean, IsEnum, IsUUID } from "class-validator";
 export class choicesDto {
   @ApiProperty({
     type: String,
@@ -34,12 +34,6 @@ export class QuestionDto {
   type: QuestionType;
 
   @ApiProperty({
-    description: QuestionFieldsProperties.employee_id,
-  })
-  @IsNumber()
-  employee_id: number;
-
-  @ApiProperty({
     description: QuestionFieldsProperties.isRequired,
   })
   @IsBoolean()
@@ -48,6 +42,7 @@ export class QuestionDto {
     description: QuestionFieldsProperties.checkList_id,
   })
   @IsNonBlankString({ isOptional: false })
+  @IsUUID()
   checklist_id: string;
 
   @ApiProperty({
@@ -58,6 +53,7 @@ export class QuestionDto {
 
   @ApiProperty({
     description: QuestionFieldsProperties.answerType,
+    enum: QuestionAnswerType,
   })
   @IsEnum(QuestionAnswerType)
   answerType: QuestionAnswerType;
@@ -66,6 +62,7 @@ export class QuestionDto {
     description: QuestionFieldsProperties.categoryId,
   })
   @IsNonBlankString({ isOptional: false })
+  @IsUUID()
   category_id: string;
   @ApiPropertyOptional({
     type: [choicesDto],

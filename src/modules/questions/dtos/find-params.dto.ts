@@ -1,10 +1,11 @@
-import { IsString } from "class-validator";
+import { IsString, IsUUID } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { BasePaginatedParams } from "@shared/enums";
 
 export class FindParamsDto {
   @ApiProperty()
   @IsString()
+  @IsUUID()
   checklistId: string;
 
   @ApiProperty({ description: BasePaginatedParams.limit })

@@ -78,7 +78,7 @@ export class CheckListItemFormattedList {
   @IsBoolean()
   hasAnomalies: boolean;
 }
-export class CheckListForSpecificEmployee {
+export class CheckListByEmployee {
   @ApiProperty({
     description: "ID do checklist",
   })
