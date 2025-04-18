@@ -10,6 +10,7 @@ import { RolesModule } from "@modules/roles/roles.module";
 import { CategoriesModule } from "@modules/categories/categories.module";
 import { QuestionsModule } from "@modules/questions/questions.module";
 import { AnswersModule } from "@modules/answers/answers.module";
+import { ChecklistOnEmployeeModule } from "@modules/checklistOnEmployee/checklistOnEmployee.module";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AnswersModule } from "@modules/answers/answers.module";
     CategoriesModule,
     QuestionsModule,
     AnswersModule,
+    ChecklistOnEmployeeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
