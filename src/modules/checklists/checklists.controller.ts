@@ -19,10 +19,10 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
-import { CheckList, Question } from "./entities/checklist.entity";
+import { CheckList } from "./entities/checklist.entity";
 import { JwtAuthGuard } from "@shared/guards/jwt-auth.guard";
 import {
-  CheckListForSpecificEmployee,
+  CheckListByEmployee,
   CheckListItemFormattedList,
 } from "./dtos/check_list_item.dto";
 import { employeeIdDto, FindParamsDto } from "./dtos/find-params.dto";
@@ -33,10 +33,7 @@ import {
 } from "./dtos/update-checklist.dto";
 import { CheckListItem } from "./entities/checkListItem.entity";
 import { GroupedCheckList } from "./interfaces/checklist.interface";
-import {
-  batchConnectCheckListQuestionsToEmployeeDto,
-  BatchConnectCompanyToChecklistDto,
-} from "./dtos/batch.dto";
+import { BatchConnectCompanyToChecklistDto } from "./dtos/batch.dto";
 import { BaseMessages } from "@shared/enums";
 import { CheckListDto } from "./dtos/find.dto";
 
@@ -106,7 +103,7 @@ export class ChecklistsController {
 
   @Get("by-employee")
   @ApiOkResponse({
-    type: [CheckListForSpecificEmployee],
+    type: [CheckListByEmployee],
   })
   /**
    * Retorna uma lista paginada de checklists associados a um funcionário específico.
@@ -116,7 +113,7 @@ export class ChecklistsController {
    */
   findPaginatedByEmployeeParams(
     @Query() dto: employeeIdDto,
-  ): Promise<CheckListForSpecificEmployee[]> {
+  ): Promise<CheckListByEmployee[]> {
     return this.service.findPaginatedByEmployeeResponsible({
       employeeId: dto.employeeId,
     });
@@ -163,20 +160,6 @@ export class ChecklistsController {
   })
   connectCheckListToCompany(@Body() dto: BatchConnectCompanyToChecklistDto[]) {
     return this.service.updateCompanyRelatedBatch(dto);
-  }
-
-  @Put("relate-employee-to-checklist")
-  @ApiNotFoundResponse({
-    description: BaseMessages.notFound,
-    type: NotFoundException,
-  })
-  @ApiOkResponse({
-    type: Question,
-  })
-  connectEmployeeToCheckList(
-    @Body() dto: batchConnectCheckListQuestionsToEmployeeDto,
-  ) {
-    return this.service.batchConnectCheckListQuestionsToEmployee(dto);
   }
 
   @Put()

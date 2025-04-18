@@ -26,8 +26,8 @@ import {
 } from "@modules/questions/enums";
 import { Question } from "@modules/questions/entities/question.entity";
 import { FindParamsDto } from "../dtos/find-params.dto";
-import { EmployeesFields } from "@modules/employees/enums";
-import { Employee } from "@modules/employees/entities/employee.entity";
+
+import { ChecklistOnEmployeeFieldsProperties } from "@modules/checklistOnEmployee/enums";
 
 /**
  * Cria um item de checklist no banco de dados utilizando uma transação.
@@ -371,40 +371,29 @@ export function buildQuestionsRelatedQueryWithJoins(
  * Esta função é útil em cenários onde é necessário buscar informações detalhadas sobre checklists
  * e suas relações com questões, escolhas e funcionários, filtrando por um funcionário específico.
  */
-export function buildCheckListWithEmployeeRelatedQueryWithJoins(
-  base: Knex.QueryBuilder,
-  employeeId: string,
-  query?: string,
-): Knex.QueryBuilder {
+export function buildCheckListWithEmployeeRelatedQueryWithJoins({
+  base,
+  employeeId,
+  query,
+}: {
+  base: Knex.QueryBuilder;
+  employeeId: string;
+  query?: string;
+}): Knex.QueryBuilder {
   return base
     .join(
-      QuestionFieldsProperties.tableName,
-      `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.checkList_id}`,
-      `${CheckListFieldsProperties.tableName}.id`,
-    )
-    .join(
-      EmployeesFields.tableName,
-      `${EmployeesFields.tableName}.${EmployeesFields.id}`,
-      `${QuestionFieldsProperties.tableName}.${QuestionFieldsProperties.employee_id}`,
+      CheckListFieldsProperties.tableName,
+      ` ${CheckListFieldsProperties.tableName}.id`,
+      `${ChecklistOnEmployeeFieldsProperties.tableName}.checklist_id`,
     )
 
-    .leftJoin(
-      ChoicesFieldsProperties.tableName,
-      `${ChoicesFieldsProperties.tableName}.question_id`,
-      `${QuestionFieldsProperties.tableName}.id`,
+    .where(
+      `${ChecklistOnEmployeeFieldsProperties.tableName}.${ChecklistOnEmployeeFieldsProperties.employeeId}`,
+      employeeId,
     )
-    .where((builder: Knex.QueryBuilder<Employee>) => {
-      builder.where(
-        `${EmployeesFields.tableName}.${EmployeesFields.id}`,
-        employeeId,
-      );
+    .andWhere((builder) => {
       if (query) {
-        builder.where(
-          `${CheckListFieldsProperties.tableName}.name`,
-          "ilike",
-          `%${query}%`,
-        );
+        builder.where("checklist.name", "ILIKE", `%${query}%`);
       }
-    })
-    .distinct();
+    });
 }

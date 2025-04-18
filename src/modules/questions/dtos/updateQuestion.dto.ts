@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { QuestionFieldsProperties, QuestionType } from "../enums";
 import { IsNonBlankString } from "@shared/validations/annotationsValidations/customDecorators";
-import { IsBoolean, IsEnum, IsNumber, IsOptional } from "class-validator";
+import { IsBoolean, IsEnum, IsOptional, IsUUID } from "class-validator";
 import { QuestionAnswerType } from "@shared/enums";
 
 export class UpdateQuestion {
@@ -9,6 +9,7 @@ export class UpdateQuestion {
     description: QuestionFieldsProperties.id,
   })
   @IsNonBlankString({ isOptional: false })
+  @IsUUID()
   questionId: string;
   @ApiPropertyOptional({
     description: QuestionFieldsProperties.question,
@@ -25,13 +26,6 @@ export class UpdateQuestion {
   type?: QuestionType;
 
   @ApiPropertyOptional({
-    description: QuestionFieldsProperties.employee_id,
-  })
-  @IsOptional()
-  @IsNumber()
-  employee_id?: number;
-
-  @ApiPropertyOptional({
     description: QuestionFieldsProperties.isRequired,
   })
   @IsBoolean()
@@ -41,6 +35,8 @@ export class UpdateQuestion {
     description: QuestionFieldsProperties.checkList_id,
   })
   @IsNonBlankString({ isOptional: true })
+  @IsUUID()
+  @IsOptional()
   checkListItem_id?: string;
 
   @ApiPropertyOptional({
@@ -54,6 +50,7 @@ export class UpdateQuestion {
   })
   @IsNonBlankString({ isOptional: true })
   @IsOptional()
+  @IsUUID()
   category_id: string;
 
   @ApiPropertyOptional({
